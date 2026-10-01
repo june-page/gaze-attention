@@ -111,6 +111,22 @@ test("result pills open their accordion", async ({ page }) => {
   await pill.click();
   await expect(content).toBeVisible();
   await expect(pill).toHaveClass(/active/);
+
+  const chart = page.locator("#video-chart");
+  await expect(chart.locator("svg")).toBeVisible();
+  const points = chart.locator(".hit");
+  await expect(points).toHaveCount(5);
+  const labels = await points.evaluateAll((nodes) =>
+    nodes.map((node) => node.getAttribute("aria-label")),
+  );
+  expect(labels.every((label) => label.includes("Cambrian-4B"))).toBe(true);
+  expect(labels.some((label) => label.startsWith("−1.7 points"))).toBe(true);
+  const lowBudget = chart.locator('.hit[aria-label*="2000 of 20000"]');
+  await expect(lowBudget).toHaveAttribute("aria-label", /^\+1\.1 points/);
+  await lowBudget.focus();
+  await expect(page.locator(".chart-tooltip")).toContainText(
+    "2000 of 20000 visual KV entries (10%)",
+  );
 });
 
 test("image examples switch together and survive a video tab visit", async ({

@@ -1589,123 +1589,18 @@
               <div class="result-layout">
                 <div class="chart-card">
                   <h4 class="chart-title">
-                    Average score change on six video benchmarks
+                    Average score change vs. visual KV budget
                   </h4>
                   <p class="chart-subtitle">
-                    Relative to dense attention over the full visual KV cache;
-                    the label gives the visual KV entries attended to
+                    Cambrian-4B, averaged over six video benchmarks, relative to
+                    dense attention with 20K visual KV entries
                   </p>
-                  <ul class="chart-legend">
-                    <li>
-                      <span class="legend-swatch swatch-gaze"></span>Gaze
-                      Attention
-                    </li>
-                    <li>
-                      <span class="legend-swatch swatch-other"></span>Baselines
-                    </li>
-                  </ul>
-
-                  <div class="delta-group">
-                    <h4>
-                      Cambrian-4B
-                      <span>dense baseline: 20K visual KV entries</span>
-                    </h4>
-                    <div
-                      class="delta-row"
-                      tabindex="0"
-                      data-tip-title="&minus;1.7 points"
-                      data-tip-body="Dense attention with fewer input tokens, 4K entries|Average 60.6 vs. 62.2 with 20K entries (difference of the unrounded averages)"
-                    >
-                      <span class="delta-label"
-                        >Dense, fewer tokens<em>4K entries</em></span
-                      >
-                      <span class="delta-track" style="--w: 28.33%">
-                        <span class="delta-bar is-neg"></span>
-                        <span class="delta-value is-neg">&minus;1.7</span>
-                      </span>
-                    </div>
-                    <div
-                      class="delta-row"
-                      tabindex="0"
-                      data-tip-title="&minus;0.2 points"
-                      data-tip-body="HERMES, 4K of 20K entries"
-                    >
-                      <span class="delta-label">HERMES<em>4K entries</em></span>
-                      <span class="delta-track" style="--w: 3.33%">
-                        <span class="delta-bar is-neg"></span>
-                        <span class="delta-value is-neg">&minus;0.2</span>
-                      </span>
-                    </div>
-                    <div
-                      class="delta-row"
-                      tabindex="0"
-                      data-tip-title="+1.4 points"
-                      data-tip-body="Gaze Attention, 4K of 20K entries|Average 63.6 vs. 62.2 with dense attention"
-                    >
-                      <span class="delta-label"
-                        >Gaze Attention<em>4K entries</em></span
-                      >
-                      <span class="delta-track" style="--w: 23.33%">
-                        <span class="delta-bar is-pos is-gaze"></span>
-                        <span class="delta-value is-pos">+1.4</span>
-                      </span>
-                    </div>
-                    <div
-                      class="delta-row"
-                      tabindex="0"
-                      data-tip-title="+1.1 points"
-                      data-tip-body="Gaze Attention, 2K of 20K entries (90% fewer)"
-                    >
-                      <span class="delta-label"
-                        >Gaze Attention<em>2K entries</em></span
-                      >
-                      <span class="delta-track" style="--w: 18.33%">
-                        <span class="delta-bar is-pos is-gaze"></span>
-                        <span class="delta-value is-pos">+1.1</span>
-                      </span>
-                    </div>
-                  </div>
-
-                  <div class="delta-group">
-                    <h4>
-                      Cambrian-7B
-                      <span>dense baseline: 10K visual KV entries</span>
-                    </h4>
-                    <div
-                      class="delta-row"
-                      tabindex="0"
-                      data-tip-title="+0.4 points"
-                      data-tip-body="HERMES, 1.5K of 10K entries"
-                    >
-                      <span class="delta-label"
-                        >HERMES<em>1.5K entries</em></span
-                      >
-                      <span class="delta-track" style="--w: 6.67%">
-                        <span class="delta-bar is-pos"></span>
-                        <span class="delta-value is-pos">+0.4</span>
-                      </span>
-                    </div>
-                    <div
-                      class="delta-row"
-                      tabindex="0"
-                      data-tip-title="+1.0 points"
-                      data-tip-body="Gaze Attention, 1.5K of 10K entries"
-                    >
-                      <span class="delta-label"
-                        >Gaze Attention<em>1.5K entries</em></span
-                      >
-                      <span class="delta-track" style="--w: 16.67%">
-                        <span class="delta-bar is-pos is-gaze"></span>
-                        <span class="delta-value is-pos">+1.0</span>
-                      </span>
-                    </div>
-                  </div>
-                  <div class="delta-axis" aria-hidden="true">
-                    <span></span>
-                    <span class="delta-axis-scale"
-                      ><span>&minus;3</span><span>0</span><span>+3</span></span
-                    >
-                  </div>
+                  <ul class="chart-legend" id="video-chart-legend"></ul>
+                  <div
+                    id="video-chart"
+                    role="img"
+                    aria-label="Line chart for Cambrian-4B. At 4K of 20K visual KV entries, dense attention with fewer input tokens loses 1.7 average points and HERMES loses 0.2, while Gaze Attention gains 1.4. With 2K entries, Gaze Attention gains 1.1 points."
+                  ></div>
 
                   <details class="table-view">
                     <summary>Show the numbers</summary>

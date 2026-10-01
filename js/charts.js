@@ -478,6 +478,78 @@
     ],
   };
 
+  /* ---------- video benchmarks (Table 2), Cambrian-4B only ---------- */
+
+  function videoRow(entries, scores) {
+    return {
+      entries: entries,
+      // Keep the full mean so that rounding does not change the score gap.
+      average:
+        scores.reduce(function (sum, score) {
+          return sum + score;
+        }, 0) / scores.length,
+    };
+  }
+
+  var VIDEO_BASELINE = videoRow(20000, [58.8, 65.9, 53.5, 57.5, 77.1, 60.5]);
+  var VIDEO_CHART = {
+    height: IMAGE_CHART.height,
+    xDomain: [100, 0],
+    yDomain: [-2.1, 2.1],
+    yTicks: [-2, -1, 0, 1, 2],
+    yDigits: 0,
+    xTicks: IMAGE_CHART.xTicks,
+    xTitle: IMAGE_CHART.xTitle,
+    xTitleShort: IMAGE_CHART.xTitleShort,
+    directLabels: true,
+    labelSpace: IMAGE_CHART.labelSpace,
+    origin: {
+      x: 100,
+      y: 0,
+      tip: {
+        title: "Dense attention",
+        lines: ["Cambrian-4B: 62.2 (20K visual KV entries)"],
+      },
+    },
+    series: [
+      budgetSeries({
+        name: "Dense, fewer tokens",
+        model: "Cambrian-4B",
+        color: COLOR.other,
+        marker: "diamond",
+        label: { text: "Fewer tokens −1.7", dx: 12, dy: 4, muted: true },
+        rows: [
+          VIDEO_BASELINE,
+          videoRow(4000, [55.7, 61.4, 53.2, 54.0, 75.3, 63.7]),
+        ],
+      }),
+      budgetSeries({
+        name: "HERMES",
+        model: "Cambrian-4B",
+        color: COLOR.other,
+        marker: "square",
+        label: { text: "HERMES −0.2", dx: 12, dy: 4, muted: true },
+        rows: [
+          VIDEO_BASELINE,
+          videoRow(4000, [58.1, 65.0, 53.4, 56.2, 76.5, 62.7]),
+        ],
+      }),
+      budgetSeries({
+        name: "Gaze Attention",
+        model: "Cambrian-4B",
+        color: COLOR.gaze,
+        marker: "circle",
+        emphasis: true,
+        label: { text: "Gaze Attention +1.1", dx: 12, dy: 4 },
+        rows: [
+          VIDEO_BASELINE,
+          videoRow(4000, [60.4, 67.5, 53.8, 56.8, 80.4, 62.9]),
+          videoRow(2000, [59.4, 67.1, 53.2, 56.6, 79.9, 63.8]),
+        ],
+      }),
+    ],
+  };
+
   /* ---------- ablations (Fig. 6), relative to the default setting ---------- */
 
   function ablationSeries(name, unit, positions, names, scores, defaultIndex) {
@@ -591,6 +663,7 @@
   function init() {
     bindStaticTips();
     mountLineChart("image-chart", IMAGE_CHART, "image-chart-legend");
+    mountLineChart("video-chart", VIDEO_CHART, "video-chart-legend");
     mountLineChart("context-chart", CONTEXT_CHART);
     mountLineChart("region-chart", REGION_CHART);
     window.addEventListener("scroll", hideTip, { passive: true });
