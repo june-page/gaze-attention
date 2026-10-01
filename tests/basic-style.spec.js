@@ -119,7 +119,7 @@ test("image examples switch together and survive a video tab visit", async ({
   await page.goto(pageUrl);
   const panel = page.locator("#panel-eviction");
   const examples = [
-    ["What is the dog holding", "flowers", "assets/figures/routing/photo.jpg"],
+    ["What is the dog holding", "flowers", "dog-cat/photo.jpg"],
     ["Where are the people", "They", "people-dog/photo.jpg"],
     ["Where are the man", "holding", "man-dog-sheep/photo.jpg"],
     ["What is the dog doing", "railing", "dog-bicycle/photo.jpg"],
