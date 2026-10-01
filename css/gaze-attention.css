@@ -292,7 +292,7 @@ figure {
 }
 
 .section-title {
-  margin: 60px 0 30px;
+  margin: 90px 0 30px;
   color: var(--primary-color);
   font-size: clamp(1.65rem, 3vw, 2.15rem);
   font-weight: 700;
