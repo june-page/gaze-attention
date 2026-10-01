@@ -107,6 +107,26 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
+  /* ---------- image comparison examples ---------- */
+  const exampleButtons = Array.from(
+    document.querySelectorAll("[data-example-target]"),
+  );
+  const imageExamples = Array.from(
+    document.querySelectorAll("[data-image-example]"),
+  );
+
+  exampleButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      const target = button.dataset.exampleTarget;
+      imageExamples.forEach((example) => {
+        example.hidden = example.id !== target;
+      });
+      exampleButtons.forEach((other) => {
+        other.setAttribute("aria-pressed", String(other === button));
+      });
+    });
+  });
+
   /* ---------- deep links ---------- */
   const activateByHash = () => {
     const id = window.location.hash.slice(1);

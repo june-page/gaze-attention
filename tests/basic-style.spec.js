@@ -31,7 +31,14 @@ test("page renders without broken assets or horizontal overflow", async ({
     await tab.click();
     const panel = page.locator(`#${await tab.getAttribute("aria-controls")}`);
     await expect(panel).toBeVisible();
-    for (const image of await panel.locator("img").all()) {
+    for (const button of await panel.locator("[data-example-target]").all()) {
+      await button.click();
+      for (const image of await panel.locator("img:visible").all()) {
+        await image.scrollIntoViewIfNeeded();
+        await expect(image).toHaveJSProperty("complete", true);
+      }
+    }
+    for (const image of await panel.locator("img:visible").all()) {
       await image.scrollIntoViewIfNeeded();
       await expect(image).toHaveJSProperty("complete", true);
     }
@@ -104,4 +111,49 @@ test("result pills open their accordion", async ({ page }) => {
   await pill.click();
   await expect(content).toBeVisible();
   await expect(pill).toHaveClass(/active/);
+});
+
+test("image examples switch together and survive a video tab visit", async ({
+  page,
+}) => {
+  await page.goto(pageUrl);
+  const panel = page.locator("#panel-eviction");
+  const examples = [
+    ["What is the dog holding", "flowers", "assets/figures/routing/photo.jpg"],
+    ["Where are the people", "They", "people-dog/photo.jpg"],
+    ["Where are the man", "holding", "man-dog-sheep/photo.jpg"],
+    ["What is the dog doing", "railing", "dog-bicycle/photo.jpg"],
+  ];
+
+  for (const [index, [question, word, photo]] of examples.entries()) {
+    const button = panel.locator("[data-example-target]").nth(index);
+    await button.click();
+    await expect(button).toHaveAttribute("aria-pressed", "true");
+    await expect(panel.locator('[aria-pressed="true"]')).toHaveCount(1);
+    const example = panel.locator("[data-image-example]:visible");
+    await expect(example).toHaveCount(1);
+    await expect(example.locator(".qa-question")).toContainText(question);
+    await expect(example.locator(".selection-ours > p")).toContainText(word);
+    await expect(example.locator(".is-photo img")).toHaveAttribute(
+      "src",
+      new RegExp(photo.replaceAll(".", "\\.") + "$"),
+    );
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= window.innerWidth + 1,
+      ),
+    ).toBe(true);
+  }
+
+  await page.getByRole("tab", { name: "Videos", exact: true }).click();
+  await page
+    .getByRole("tab", {
+      name: "Images (Ours vs. Eviction methods)",
+      exact: true,
+    })
+    .click();
+  await expect(panel.locator("#image-example-4")).toBeVisible();
+  await panel.locator("[data-example-target]").first().focus();
+  await page.keyboard.press("Enter");
+  await expect(panel.locator("#image-example-1")).toBeVisible();
 });

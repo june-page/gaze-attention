@@ -234,8 +234,8 @@
                 Qwen3-4B) while each word is generated. With Gaze Attention, a
                 head attends to only 2 of the 16 gaze regions (128 of 1,024
                 visual tokens); dense attention covers all of them. The routing
-                is learned without any gaze supervision. Click a word to jump
-                to it.
+                is learned without any gaze supervision. Click a word to jump to
+                it.
               </p>
             </div>
           </div>
@@ -396,8 +396,8 @@
             <figcaption class="figure-caption">
               Token compression and KV-cache eviction reduce the visual KV cache
               during prefill.<br />
-              Gaze Attention keeps the cache and selects
-              query-relevant gaze regions at each generation step.
+              Gaze Attention keeps the cache and selects query-relevant gaze
+              regions at each generation step.
             </figcaption>
           </figure>
 
@@ -587,9 +587,53 @@
             id="panel-eviction"
             aria-labelledby="tab-eviction"
           >
-            <h3 class="panel-heading">
-              A fixed selection can miss what later words need
-            </h3>
+            <div class="image-examples-header">
+              <h3 class="panel-heading">
+                A fixed selection can miss what later words need
+              </h3>
+              <div
+                class="image-example-buttons"
+                role="group"
+                aria-label="Image comparison examples"
+              >
+                <button
+                  type="button"
+                  data-example-target="image-example-1"
+                  aria-controls="image-example-1"
+                  aria-pressed="true"
+                  aria-label="Example 1: Dog and cat"
+                >
+                  1
+                </button>
+                <button
+                  type="button"
+                  data-example-target="image-example-2"
+                  aria-controls="image-example-2"
+                  aria-pressed="false"
+                  aria-label="Example 2: People and dog"
+                >
+                  2
+                </button>
+                <button
+                  type="button"
+                  data-example-target="image-example-3"
+                  aria-controls="image-example-3"
+                  aria-pressed="false"
+                  aria-label="Example 3: Man, dog, and sheep"
+                >
+                  3
+                </button>
+                <button
+                  type="button"
+                  data-example-target="image-example-4"
+                  aria-controls="image-example-4"
+                  aria-pressed="false"
+                  aria-label="Example 4: Dog and bicycle"
+                >
+                  4
+                </button>
+              </div>
+            </div>
             <p class="panel-lead">
               InfiniPot-V and HERMES keep one set of visual tokens for the whole
               answer. Gaze Attention selects regions again for every generated
@@ -597,151 +641,576 @@
               and 23.
             </p>
 
-            <div class="selection-top">
-              <div class="selection-card is-photo">
-                <img
-                  src="assets/figures/routing/photo.jpg"
-                  width="480"
-                  height="480"
-                  loading="lazy"
-                  alt="A corgi holding white flowers in its mouth next to a black and white cat on grass."
-                />
-                <p class="qa-question">
-                  Q. What is the dog holding in its mouth, and what is the cat
-                  doing?
-                </p>
+            <div class="image-example" id="image-example-1" data-image-example>
+              <div class="selection-top">
+                <div class="selection-card is-photo">
+                  <img
+                    src="assets/figures/routing/photo.jpg"
+                    width="480"
+                    height="480"
+                    loading="lazy"
+                    alt="A corgi holding white flowers in its mouth next to a black and white cat on grass."
+                  />
+                  <p class="qa-question">
+                    Q. What is the dog holding in its mouth, and what is the cat
+                    doing?
+                  </p>
+                </div>
+
+                <div class="selection-card">
+                  <h4>InfiniPot-V</h4>
+                  <p>
+                    The dog is holding a piece of
+                    <span class="word-error">paper</span> in its mouth, and the
+                    cat is looking at the dog.
+                  </p>
+                  <div class="panel-pair">
+                    <img
+                      src="assets/figures/routing/infinipot-l10.jpg"
+                      width="480"
+                      height="480"
+                      loading="lazy"
+                      alt="Tokens kept by InfiniPot-V at layer 10: scattered patches across the image."
+                    />
+                    <img
+                      src="assets/figures/routing/infinipot-l23.jpg"
+                      width="480"
+                      height="480"
+                      loading="lazy"
+                      alt="Tokens kept by InfiniPot-V at layer 23: scattered patches across the image."
+                    />
+                  </div>
+                  <p class="kv-note">
+                    KV size 24 / 121, unchanged during decoding
+                  </p>
+                </div>
+
+                <div class="selection-card">
+                  <h4>HERMES</h4>
+                  <p>
+                    The dog is holding a bunch of white flowers. The cat is
+                    standing, <span class="word-error">looking at it</span> with
+                    an attentive gaze.
+                  </p>
+                  <div class="panel-pair">
+                    <img
+                      src="assets/figures/routing/hermes-l10.jpg"
+                      width="480"
+                      height="480"
+                      loading="lazy"
+                      alt="Tokens kept by HERMES at layer 10: mostly the bottom strip of grass and a few patches."
+                    />
+                    <img
+                      src="assets/figures/routing/hermes-l23.jpg"
+                      width="480"
+                      height="480"
+                      loading="lazy"
+                      alt="Tokens kept by HERMES at layer 23: scattered patches on the dog and the cat."
+                    />
+                  </div>
+                  <p class="kv-note">
+                    KV size 39 / 196, unchanged during decoding
+                  </p>
+                </div>
               </div>
 
-              <div class="selection-card">
-                <h4>InfiniPot-V</h4>
-                <p>
-                  The dog is holding a piece of
-                  <span class="word-error">paper</span> in its mouth, and the
-                  cat is looking at the dog.
-                </p>
-                <div class="panel-pair">
-                  <img
-                    src="assets/figures/routing/infinipot-l10.jpg"
-                    width="480"
-                    height="480"
-                    loading="lazy"
-                    alt="Tokens kept by InfiniPot-V at layer 10: scattered patches across the image."
-                  />
-                  <img
-                    src="assets/figures/routing/infinipot-l23.jpg"
-                    width="480"
-                    height="480"
-                    loading="lazy"
-                    alt="Tokens kept by InfiniPot-V at layer 23: scattered patches across the image."
-                  />
+              <div class="selection-ours">
+                <div class="selection-ours-head">
+                  <h4>Gaze Attention</h4>
+                  <span class="kv-note">KV size 18 / 144 at every step</span>
                 </div>
-                <p class="kv-note">
-                  KV size 24 / 121, unchanged during decoding
+                <p>
+                  The dog is holding a bunch of white
+                  <span class="word-chip">flowers</span> in its mouth, and the
+                  <span class="word-chip">cat</span> is sitting on the
+                  <span class="word-chip">grass</span>.
                 </p>
+                <div class="selection-steps">
+                  <div class="selection-step">
+                    <span class="selection-step-label"
+                      >While generating &ldquo;flowers&rdquo;</span
+                    >
+                    <div class="panel-pair">
+                      <img
+                        src="assets/figures/routing/gaze-flowers-l10.jpg"
+                        width="480"
+                        height="480"
+                        loading="lazy"
+                        alt="Regions routed at layer 10 for the word flowers: the flowers in the dog's mouth."
+                      />
+                      <img
+                        src="assets/figures/routing/gaze-flowers-l23.jpg"
+                        width="480"
+                        height="480"
+                        loading="lazy"
+                        alt="Regions routed at layer 23 for the word flowers: the dog's head and the flowers."
+                      />
+                    </div>
+                  </div>
+                  <div class="selection-step">
+                    <span class="selection-step-label"
+                      >While generating &ldquo;cat&rdquo;</span
+                    >
+                    <div class="panel-pair">
+                      <img
+                        src="assets/figures/routing/gaze-cat-l10.jpg"
+                        width="480"
+                        height="480"
+                        loading="lazy"
+                        alt="Regions routed at layer 10 for the word cat: the cat."
+                      />
+                      <img
+                        src="assets/figures/routing/gaze-cat-l23.jpg"
+                        width="480"
+                        height="480"
+                        loading="lazy"
+                        alt="Regions routed at layer 23 for the word cat: the cat."
+                      />
+                    </div>
+                  </div>
+                  <div class="selection-step">
+                    <span class="selection-step-label"
+                      >While generating &ldquo;grass&rdquo;</span
+                    >
+                    <div class="panel-pair">
+                      <img
+                        src="assets/figures/routing/gaze-grass-l10.jpg"
+                        width="480"
+                        height="480"
+                        loading="lazy"
+                        alt="Regions routed at layer 10 for the word grass: grass regions."
+                      />
+                      <img
+                        src="assets/figures/routing/gaze-grass-l23.jpg"
+                        width="480"
+                        height="480"
+                        loading="lazy"
+                        alt="Regions routed at layer 23 for the word grass: the grass at the bottom of the image."
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
-
-              <div class="selection-card">
-                <h4>HERMES</h4>
-                <p>
-                  The dog is holding a bunch of white flowers. The cat is
-                  standing, <span class="word-error">looking at it</span> with
-                  an attentive gaze.
-                </p>
-                <div class="panel-pair">
+            </div>
+            <div
+              class="image-example"
+              id="image-example-2"
+              data-image-example
+              hidden
+            >
+              <div class="selection-top">
+                <div class="selection-card is-photo">
                   <img
-                    src="assets/figures/routing/hermes-l10.jpg"
-                    width="480"
-                    height="480"
+                    src="assets/figures/routing/people-dog/photo.jpg"
+                    width="306"
+                    height="306"
                     loading="lazy"
-                    alt="Tokens kept by HERMES at layer 10: mostly the bottom strip of grass and a few patches."
+                    alt="Two people and a dog holding a blue frisbee on a lawn."
                   />
-                  <img
-                    src="assets/figures/routing/hermes-l23.jpg"
-                    width="480"
-                    height="480"
-                    loading="lazy"
-                    alt="Tokens kept by HERMES at layer 23: scattered patches on the dog and the cat."
-                  />
+                  <p class="qa-question">
+                    Q. Where are the people and the dog, and what are they
+                    doing?
+                  </p>
                 </div>
-                <p class="kv-note">
-                  KV size 39 / 196, unchanged during decoding
+                <div class="selection-card">
+                  <h4>InfiniPot-V</h4>
+                  <p>
+                    The people and the dog are in a park. The dog is
+                    <span class="word-error">running</span> towards the people.
+                  </p>
+                  <div class="panel-pair">
+                    <div class="selection-layer">
+                      <img
+                        src="assets/figures/routing/people-dog/infinipot-l10.png"
+                        width="762"
+                        height="770"
+                        loading="lazy"
+                        alt="Tokens kept by InfiniPot-V at layer 10."
+                      /><span aria-hidden="true">Layer10</span>
+                    </div>
+                    <div class="selection-layer">
+                      <img
+                        src="assets/figures/routing/people-dog/infinipot-l23.png"
+                        width="770"
+                        height="770"
+                        loading="lazy"
+                        alt="Tokens kept by InfiniPot-V at layer 23."
+                      /><span aria-hidden="true">Layer23</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="selection-card">
+                  <h4>HERMES</h4>
+                  <p>
+                    The people and the dog are in a grassy area. The woman is
+                    holding a <span class="word-error">frisbee</span>.
+                  </p>
+                  <div class="panel-pair">
+                    <div class="selection-layer">
+                      <img
+                        src="assets/figures/routing/people-dog/hermes-l10.png"
+                        width="736"
+                        height="736"
+                        loading="lazy"
+                        alt="Tokens kept by HERMES at layer 10."
+                      /><span aria-hidden="true">Layer10</span>
+                    </div>
+                    <div class="selection-layer">
+                      <img
+                        src="assets/figures/routing/people-dog/hermes-l23.png"
+                        width="718"
+                        height="716"
+                        loading="lazy"
+                        alt="Tokens kept by HERMES at layer 23."
+                      /><span aria-hidden="true">Layer23</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="selection-ours">
+                <div class="selection-ours-head"><h4>Gaze Attention</h4></div>
+                <p>
+                  The people and the <span class="word-chip">dog</span> are in a
+                  grassy area. <span class="word-chip">They</span> are playing
+                  with a frisbee.
                 </p>
+                <div class="selection-steps selection-steps-pair">
+                  <div class="selection-step">
+                    <span class="selection-step-label"
+                      >While generating &ldquo;dog&rdquo;</span
+                    >
+                    <div class="panel-pair">
+                      <div class="selection-layer">
+                        <img
+                          src="assets/figures/routing/people-dog/gaze-dog-l10.png"
+                          width="858"
+                          height="854"
+                          loading="lazy"
+                          alt="Regions routed for the word dog at layer 10."
+                        /><span aria-hidden="true">Layer10</span>
+                      </div>
+                      <div class="selection-layer">
+                        <img
+                          src="assets/figures/routing/people-dog/gaze-dog-l23.png"
+                          width="858"
+                          height="856"
+                          loading="lazy"
+                          alt="Regions routed for the word dog at layer 23."
+                        /><span aria-hidden="true">Layer23</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="selection-step">
+                    <span class="selection-step-label"
+                      >While generating &ldquo;They&rdquo;</span
+                    >
+                    <div class="panel-pair">
+                      <div class="selection-layer">
+                        <img
+                          src="assets/figures/routing/people-dog/gaze-they-l10.png"
+                          width="858"
+                          height="854"
+                          loading="lazy"
+                          alt="Regions routed for the word They at layer 10."
+                        /><span aria-hidden="true">Layer10</span>
+                      </div>
+                      <div class="selection-layer">
+                        <img
+                          src="assets/figures/routing/people-dog/gaze-they-l23.png"
+                          width="862"
+                          height="854"
+                          loading="lazy"
+                          alt="Regions routed for the word They at layer 23."
+                        /><span aria-hidden="true">Layer23</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div class="selection-ours">
-              <div class="selection-ours-head">
-                <h4>Gaze Attention</h4>
-                <span class="kv-note">KV size 18 / 144 at every step</span>
+            <div
+              class="image-example"
+              id="image-example-3"
+              data-image-example
+              hidden
+            >
+              <div class="selection-top">
+                <div class="selection-card is-photo">
+                  <img
+                    src="assets/figures/routing/man-dog-sheep/photo.jpg"
+                    width="298"
+                    height="251"
+                    loading="lazy"
+                    alt="A man holding a stick in a field with sheep and a herding dog."
+                  />
+                  <p class="qa-question">
+                    Q. Where are the man, the dog, and the sheep, and what are
+                    they doing?
+                  </p>
+                </div>
+                <div class="selection-card">
+                  <h4>InfiniPot-V</h4>
+                  <p>
+                    The man is standing in the middle of a field, holding a
+                    leash <span class="word-error">attached</span> to a black
+                    <span class="word-error">dog</span>.
+                  </p>
+                  <div class="panel-pair">
+                    <div class="selection-layer">
+                      <img
+                        src="assets/figures/routing/man-dog-sheep/infinipot-l10.png"
+                        width="766"
+                        height="644"
+                        loading="lazy"
+                        alt="Tokens kept by InfiniPot-V at layer 10."
+                      /><span aria-hidden="true">Layer10</span>
+                    </div>
+                    <div class="selection-layer">
+                      <img
+                        src="assets/figures/routing/man-dog-sheep/infinipot-l23.png"
+                        width="766"
+                        height="644"
+                        loading="lazy"
+                        alt="Tokens kept by InfiniPot-V at layer 23."
+                      /><span aria-hidden="true">Layer23</span>
+                    </div>
+                  </div>
+                  <p class="kv-note">
+                    KV size 24 / 121, unchanged during decoding
+                  </p>
+                </div>
+                <div class="selection-card">
+                  <h4>HERMES</h4>
+                  <p>
+                    The man is standing on the left side of the image, holding a
+                    red leash <span class="word-error">attached</span> to a
+                    <span class="word-error">dog</span>.
+                  </p>
+                  <div class="panel-pair">
+                    <div class="selection-layer">
+                      <img
+                        src="assets/figures/routing/man-dog-sheep/hermes-l10.png"
+                        width="738"
+                        height="624"
+                        loading="lazy"
+                        alt="Tokens kept by HERMES at layer 10."
+                      /><span aria-hidden="true">Layer10</span>
+                    </div>
+                    <div class="selection-layer">
+                      <img
+                        src="assets/figures/routing/man-dog-sheep/hermes-l23.png"
+                        width="742"
+                        height="626"
+                        loading="lazy"
+                        alt="Tokens kept by HERMES at layer 23."
+                      /><span aria-hidden="true">Layer23</span>
+                    </div>
+                  </div>
+                  <p class="kv-note">
+                    KV size 39 / 196, unchanged during decoding
+                  </p>
+                </div>
               </div>
-              <p>
-                The dog is holding a bunch of white
-                <span class="word-chip">flowers</span> in its mouth, and the
-                <span class="word-chip">cat</span> is sitting on the
-                <span class="word-chip">grass</span>.
-              </p>
-              <div class="selection-steps">
-                <div class="selection-step">
-                  <span class="selection-step-label"
-                    >While generating &ldquo;flowers&rdquo;</span
-                  >
-                  <div class="panel-pair">
-                    <img
-                      src="assets/figures/routing/gaze-flowers-l10.jpg"
-                      width="480"
-                      height="480"
-                      loading="lazy"
-                      alt="Regions routed at layer 10 for the word flowers: the flowers in the dog's mouth."
-                    />
-                    <img
-                      src="assets/figures/routing/gaze-flowers-l23.jpg"
-                      width="480"
-                      height="480"
-                      loading="lazy"
-                      alt="Regions routed at layer 23 for the word flowers: the dog's head and the flowers."
-                    />
+              <div class="selection-ours">
+                <div class="selection-ours-head">
+                  <h4>Gaze Attention</h4>
+                  <span class="kv-note">KV size 18 / 144 at every step</span>
+                </div>
+                <p>
+                  The man, the dog, and the sheep
+                  <span class="word-chip">are</span> in a field. The man is
+                  <span class="word-chip">holding</span> a stick and the dog is
+                  herding the sheep.
+                </p>
+                <div class="selection-steps selection-steps-pair">
+                  <div class="selection-step">
+                    <span class="selection-step-label"
+                      >While generating &ldquo;are&rdquo;</span
+                    >
+                    <div class="panel-pair">
+                      <div class="selection-layer">
+                        <img
+                          src="assets/figures/routing/man-dog-sheep/gaze-are-l10.png"
+                          width="768"
+                          height="646"
+                          loading="lazy"
+                          alt="Regions routed for the word are at layer 10."
+                        /><span aria-hidden="true">Layer10</span>
+                      </div>
+                      <div class="selection-layer">
+                        <img
+                          src="assets/figures/routing/man-dog-sheep/gaze-are-l23.png"
+                          width="824"
+                          height="696"
+                          loading="lazy"
+                          alt="Regions routed for the word are at layer 23."
+                        /><span aria-hidden="true">Layer23</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="selection-step">
+                    <span class="selection-step-label"
+                      >While generating &ldquo;holding&rdquo;</span
+                    >
+                    <div class="panel-pair">
+                      <div class="selection-layer">
+                        <img
+                          src="assets/figures/routing/man-dog-sheep/gaze-holding-l10.png"
+                          width="820"
+                          height="690"
+                          loading="lazy"
+                          alt="Regions routed for the word holding at layer 10."
+                        /><span aria-hidden="true">Layer10</span>
+                      </div>
+                      <div class="selection-layer">
+                        <img
+                          src="assets/figures/routing/man-dog-sheep/gaze-holding-l23.png"
+                          width="818"
+                          height="688"
+                          loading="lazy"
+                          alt="Regions routed for the word holding at layer 23."
+                        /><span aria-hidden="true">Layer23</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
-                <div class="selection-step">
-                  <span class="selection-step-label"
-                    >While generating &ldquo;cat&rdquo;</span
-                  >
+              </div>
+            </div>
+
+            <div
+              class="image-example"
+              id="image-example-4"
+              data-image-example
+              hidden
+            >
+              <div class="selection-top">
+                <div class="selection-card is-photo">
+                  <img
+                    src="assets/figures/routing/dog-bicycle/photo.jpg"
+                    width="489"
+                    height="489"
+                    loading="lazy"
+                    alt="A dog sitting on a porch beside a red bicycle leaning against the railing."
+                  />
+                  <p class="qa-question">
+                    Q. What is the dog doing, and how is the bicycle positioned?
+                  </p>
+                </div>
+                <div class="selection-card">
+                  <h4>InfiniPot-V</h4>
+                  <p>
+                    The dog is sitting on the
+                    <span class="word-error">ground</span>, looking at the
+                    bicycle. The bicycle is leaning against a
+                    <span class="word-error">tree</span>.
+                  </p>
                   <div class="panel-pair">
-                    <img
-                      src="assets/figures/routing/gaze-cat-l10.jpg"
-                      width="480"
-                      height="480"
-                      loading="lazy"
-                      alt="Regions routed at layer 10 for the word cat: the cat."
-                    />
-                    <img
-                      src="assets/figures/routing/gaze-cat-l23.jpg"
-                      width="480"
-                      height="480"
-                      loading="lazy"
-                      alt="Regions routed at layer 23 for the word cat: the cat."
-                    />
+                    <div class="selection-layer">
+                      <img
+                        src="assets/figures/routing/dog-bicycle/infinipot-l10.png"
+                        width="918"
+                        height="918"
+                        loading="lazy"
+                        alt="Tokens kept by InfiniPot-V at layer 10."
+                      /><span aria-hidden="true">Layer10</span>
+                    </div>
+                    <div class="selection-layer">
+                      <img
+                        src="assets/figures/routing/dog-bicycle/infinipot-l23.png"
+                        width="918"
+                        height="914"
+                        loading="lazy"
+                        alt="Tokens kept by InfiniPot-V at layer 23."
+                      /><span aria-hidden="true">Layer23</span>
+                    </div>
                   </div>
                 </div>
-                <div class="selection-step">
-                  <span class="selection-step-label"
-                    >While generating &ldquo;grass&rdquo;</span
-                  >
+                <div class="selection-card">
+                  <h4>HERMES</h4>
+                  <p>
+                    The dog is sitting on a porch, and the bicycle is leaning
+                    against it.
+                  </p>
                   <div class="panel-pair">
-                    <img
-                      src="assets/figures/routing/gaze-grass-l10.jpg"
-                      width="480"
-                      height="480"
-                      loading="lazy"
-                      alt="Regions routed at layer 10 for the word grass: grass regions."
-                    />
-                    <img
-                      src="assets/figures/routing/gaze-grass-l23.jpg"
-                      width="480"
-                      height="480"
-                      loading="lazy"
-                      alt="Regions routed at layer 23 for the word grass: the grass at the bottom of the image."
-                    />
+                    <div class="selection-layer">
+                      <img
+                        src="assets/figures/routing/dog-bicycle/hermes-l10.png"
+                        width="808"
+                        height="806"
+                        loading="lazy"
+                        alt="Tokens kept by HERMES at layer 10."
+                      /><span aria-hidden="true">Layer10</span>
+                    </div>
+                    <div class="selection-layer">
+                      <img
+                        src="assets/figures/routing/dog-bicycle/hermes-l23.png"
+                        width="810"
+                        height="810"
+                        loading="lazy"
+                        alt="Tokens kept by HERMES at layer 23."
+                      /><span aria-hidden="true">Layer23</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="selection-ours">
+                <div class="selection-ours-head"><h4>Gaze Attention</h4></div>
+                <p>
+                  The <span class="word-chip">dog</span> is sitting on the
+                  porch. The bicycle is leaning against the porch
+                  <span class="word-chip">railing</span>.
+                </p>
+                <div class="selection-steps selection-steps-pair">
+                  <div class="selection-step">
+                    <span class="selection-step-label"
+                      >While generating &ldquo;dog&rdquo;</span
+                    >
+                    <div class="panel-pair">
+                      <div class="selection-layer">
+                        <img
+                          src="assets/figures/routing/dog-bicycle/gaze-dog-l10.png"
+                          width="896"
+                          height="894"
+                          loading="lazy"
+                          alt="Regions routed for the word dog at layer 10."
+                        /><span aria-hidden="true">Layer10</span>
+                      </div>
+                      <div class="selection-layer">
+                        <img
+                          src="assets/figures/routing/dog-bicycle/gaze-dog-l23.png"
+                          width="894"
+                          height="892"
+                          loading="lazy"
+                          alt="Regions routed for the word dog at layer 23."
+                        /><span aria-hidden="true">Layer23</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="selection-step">
+                    <span class="selection-step-label"
+                      >While generating &ldquo;railing&rdquo;</span
+                    >
+                    <div class="panel-pair">
+                      <div class="selection-layer">
+                        <img
+                          src="assets/figures/routing/dog-bicycle/gaze-railing-l10.png"
+                          width="718"
+                          height="712"
+                          loading="lazy"
+                          alt="Regions routed for the word railing at layer 10."
+                        /><span aria-hidden="true">Layer10</span>
+                      </div>
+                      <div class="selection-layer">
+                        <img
+                          src="assets/figures/routing/dog-bicycle/gaze-railing-l23.png"
+                          width="722"
+                          height="716"
+                          loading="lazy"
+                          alt="Regions routed for the word railing at layer 23."
+                        /><span aria-hidden="true">Layer23</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1617,7 +2086,6 @@
               </ul>
             </div>
           </article>
-
         </div>
       </section>
 
