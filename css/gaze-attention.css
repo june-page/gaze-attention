@@ -637,7 +637,7 @@ figure {
 
 .gv-token.is-future,
 .gv-word.is-future {
-  color: #727d8d;
+  color: rgba(114, 125, 141, 0.5);
 }
 
 .gv-token:hover {
