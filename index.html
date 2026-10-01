@@ -1,0 +1,1686 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Gaze Attention Project Page</title>
+    <meta
+      name="description"
+      content="Project page for Gaze Attention (CoLM 2026): query-adaptive visual routing that lets multimodal LLMs attend only to the visual regions each generation step needs."
+    />
+    <meta property="og:type" content="website" />
+    <meta
+      property="og:url"
+      content="https://june-page.github.io/gaze-attention/"
+    />
+    <meta
+      property="og:title"
+      content="Gaze Attention: Query-Adaptive Visual Routing for Efficient Multimodal LLMs"
+    />
+    <meta
+      property="og:description"
+      content="Gaze Attention lets multimodal LLMs attend only to the visual regions each generation step needs, with up to 90% fewer visual KV entries."
+    />
+    <meta
+      property="og:image"
+      content="https://june-page.github.io/gaze-attention/assets/figures/social-card.jpg"
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="Gaze Attention: Query-Adaptive Visual Routing for Efficient Multimodal LLMs"
+    />
+    <meta
+      name="twitter:description"
+      content="Gaze Attention lets multimodal LLMs attend only to the visual regions each generation step needs, with up to 90% fewer visual KV entries."
+    />
+    <meta
+      name="twitter:image"
+      content="https://june-page.github.io/gaze-attention/assets/figures/social-card.jpg"
+    />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%233b78c4'/%3E%3Cpath d='M8 32c6-11 14-16 24-16s18 5 24 16c-6 11-14 16-24 16S14 43 8 32z' fill='%23fff'/%3E%3Ccircle cx='32' cy='32' r='9' fill='%2314243d'/%3E%3Ccircle cx='35' cy='29' r='3' fill='%23fff'/%3E%3C/svg%3E"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap"
+    />
+    <link rel="stylesheet" href="css/gaze-attention.css" />
+    <script>
+      window.MathJax = {
+        tex: {
+          inlineMath: [["\\(", "\\)"]],
+          displayMath: [["\\[", "\\]"]],
+        },
+        svg: {
+          fontCache: "global",
+        },
+      };
+    </script>
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"
+    ></script>
+  </head>
+  <body>
+    <header class="header-section" id="overview">
+      <div class="container">
+        <h1 class="paper-title">
+          <span class="title-accent">Gaze Attention</span>: Query-Adaptive
+          Visual Routing for Efficient Multimodal LLMs
+        </h1>
+        <p class="paper-subtitle">CoLM 2026</p>
+
+        <div class="author-line" role="group" aria-label="Authors">
+          <a
+            class="author-link"
+            href="https://www.junha.page/p/about.html"
+            target="_blank"
+            rel="noopener"
+            >Junha Song<sup>1,2,*</sup></a
+          >
+          <a
+            class="author-link"
+            href="https://sites.google.com/view/byeongho-heo/home"
+            target="_blank"
+            rel="noopener"
+            >Byeongho Heo<sup>1</sup></a
+          >
+          <a
+            class="author-link"
+            href="https://geonm.github.io/"
+            target="_blank"
+            rel="noopener"
+            >Geonmo Gu<sup>1</sup></a
+          >
+          <a
+            class="author-link"
+            href="https://sites.google.com/site/jaegulchoo/"
+            target="_blank"
+            rel="noopener"
+            >Jaegul Choo<sup>2</sup></a
+          >
+          <a
+            class="author-link"
+            href="https://sites.google.com/site/dyhan0920/"
+            target="_blank"
+            rel="noopener"
+            >Dongyoon Han<sup>1,&dagger;</sup></a
+          >
+          <a
+            class="author-link"
+            href="https://sangdooyun.github.io/"
+            target="_blank"
+            rel="noopener"
+            >Sangdoo Yun<sup>1,&dagger;</sup></a
+          >
+        </div>
+
+        <p class="affiliation-line">
+          <span><sup>1</sup>NAVER AI Lab</span>
+          <span><sup>2</sup>KAIST</span>
+        </p>
+        <p class="author-note">
+          <span><sup>*</sup>Project lead</span>
+          <span><sup>&dagger;</sup>Corresponding author</span>
+        </p>
+
+        <div class="institution-logos" role="group" aria-label="Institutions">
+          <img
+            class="institution-logo logo-naver"
+            src="assets/logos/naver.png"
+            alt="NAVER AI Lab"
+          />
+          <img
+            class="institution-logo logo-kaist"
+            src="assets/logos/kaist.png"
+            alt="KAIST"
+          />
+        </div>
+
+        <div class="action-row">
+          <a
+            class="btn primary-btn"
+            href="https://arxiv.org/abs/2605.13080"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M6 2h8.2L20 7.8V20a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm7 1.9V9h5.1L13 3.9zM8 12.2v1.6h8v-1.6H8zm0 3.6v1.6h6v-1.6H8z"
+              />
+            </svg>
+            Paper
+          </a>
+          <a
+            class="btn secondary-btn"
+            href="https://github.com/junha1125/Gaze-Attention"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <svg class="btn-icon" viewBox="0 0 16 16" aria-hidden="true">
+              <path
+                d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"
+              />
+            </svg>
+            Code
+          </a>
+          <a
+            class="btn secondary-btn"
+            href="https://github.com/junha1125/Gaze-Attention#models"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M12 2 3 6.6v10.8L12 22l9-4.6V6.6L12 2zm0 2.2 6.3 3.2L12 10.6 5.7 7.4 12 4.2zM5 9.1l6 3.1v7.1l-6-3.1V9.1zm8 10.2v-7.1l6-3.1v7.1l-6 3.1z"
+              />
+            </svg>
+            Models
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <main class="container">
+      <section class="section" id="tldr">
+        <div class="content-narrow">
+          <div class="tldr-box">
+            <h2 class="eyebrow-title">TL;DR</h2>
+            <div class="callout">
+              <p class="lead-strong">
+                When a multimodal LLM writes the word &ldquo;dog&rdquo;, does it
+                really need to look at the entire image?
+              </p>
+            </div>
+            <p class="lead">
+              <strong>No.</strong> People fixate on the region they are about to
+              describe, yet multimodal LLMs attend to every visual token at
+              every generation step. <strong>Gaze Attention</strong> groups the
+              cached visual tokens into spatial regions and lets each decoding
+              query attend only to the few regions it needs, selecting them anew
+              at every step. It matches or surpasses dense attention on 13 image
+              and 6 video benchmarks while attending to up to 90% fewer visual
+              KV entries.
+            </p>
+            <div class="tldr-panel">
+              <div
+                class="gaze-viewer"
+                data-gaze-viewer
+                data-view="gaze"
+                data-examples="dog-woman,dog-bike,dog-cat,skaters,cat-bowl,glue-scissors"
+              >
+                <div class="gv-stage">
+                  <div class="gv-frame">
+                    <img
+                      src="assets/demo/dog-woman.jpg"
+                      alt="A woman in a white tank top and a man play with a dog that holds a blue frisbee on a lawn."
+                    />
+                  </div>
+                </div>
+                <div class="gv-side">
+                  <p class="gv-answer">
+                    A woman wearing a white tank top and sunglasses is playing
+                    with a brown and black dog that has a blue frisbee in its
+                    mouth.
+                  </p>
+                </div>
+              </div>
+              <p class="figure-caption">
+                Attention at layer 15 of Cambrian-4B (SigLIP2-So/16 at 512 px,
+                Qwen3-4B) while each word is generated. With Gaze Attention, a
+                head attends to only 2 of the 16 gaze regions (128 of 1,024
+                visual tokens); dense attention covers all of them. The routing
+                is learned without any gaze supervision. Click a word to jump
+                to it.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="motivation">
+        <div class="content-narrow">
+          <h2 class="section-title">
+            Dense Attention Looks Everywhere, All the Time
+          </h2>
+          <div class="motivation-card">
+            <div class="motivation-text">
+              <ul class="dot-list">
+                <li>
+                  An image or a video turns into hundreds to tens of thousands
+                  of visual tokens. With dense attention, every generated token
+                  attends to all of them, whether or not they matter for the
+                  current word.
+                </li>
+                <li>
+                  Human perception is selective: we shift our gaze to the region
+                  we are about to describe.
+                </li>
+                <li>
+                  The mismatch dilutes the model's focus and makes attention
+                  over visual tokens the dominant cost for high-resolution
+                  images and long videos, where the visual KV cache keeps
+                  growing.
+                </li>
+              </ul>
+
+              <div
+                class="flow-compare"
+                role="img"
+                aria-label="Dense attention passes all visual tokens, 576 for an image or 10K for a video, to the attention operation. Gaze Attention first selects 72 or 1.5K of them and attends only to those."
+              >
+                <p class="flow-title">Select before attend</p>
+                <div class="flow-grid">
+                  <div class="flow-row">
+                    <span class="flow-name">Dense attention</span>
+                    <span class="flow-box"
+                      >Visual tokens<em>576 &middot; 10K</em></span
+                    >
+                    <span class="flow-arrow is-wide"></span>
+                    <span class="flow-box">Attention</span>
+                  </div>
+                  <div class="flow-row is-gaze">
+                    <span class="flow-name">Gaze Attention</span>
+                    <span class="flow-box"
+                      >Visual tokens<em>576 &middot; 10K</em></span
+                    >
+                    <span class="flow-arrow"></span>
+                    <span class="flow-box is-select"
+                      >Selected<em>72 &middot; 1.5K</em></span
+                    >
+                    <span class="flow-arrow"></span>
+                    <span class="flow-box">Attention</span>
+                  </div>
+                </div>
+                <p class="flow-note">
+                  Visual KV entries per query: 384 px image &middot; video
+                </p>
+              </div>
+            </div>
+            <figure class="attn-compare">
+              <div class="attn-grid">
+                <span class="attn-corner"></span>
+                <span class="attn-col-label">generating &ldquo;dog&rdquo;</span>
+                <span class="attn-col-label"
+                  >generating &ldquo;bicycle&rdquo;</span
+                >
+
+                <div class="attn-row-label">
+                  Dense attention
+                  <span>all 1,024 visual tokens</span>
+                </div>
+                <div class="gv-frame">
+                  <canvas
+                    data-gaze-still
+                    data-example="dog-bike"
+                    data-view="dense"
+                    data-word="dog"
+                    role="img"
+                    aria-label="Dense attention map while generating the word dog: attention is spread over the whole image."
+                  ></canvas>
+                </div>
+                <div class="gv-frame">
+                  <canvas
+                    data-gaze-still
+                    data-example="dog-bike"
+                    data-view="dense"
+                    data-word="bicycle"
+                    role="img"
+                    aria-label="Dense attention map while generating the word bicycle: attention is spread over the whole image."
+                  ></canvas>
+                </div>
+
+                <div class="attn-row-label is-gaze">
+                  Gaze Attention
+                  <span>128 tokens in 2 regions</span>
+                </div>
+                <div class="gv-frame">
+                  <canvas
+                    data-gaze-still
+                    data-example="dog-bike"
+                    data-view="fixed"
+                    data-word="dog"
+                    role="img"
+                    aria-label="Gaze Attention map while generating the word dog: only two regions on the dog are attended."
+                  ></canvas>
+                </div>
+                <div class="gv-frame">
+                  <canvas
+                    data-gaze-still
+                    data-example="dog-bike"
+                    data-view="fixed"
+                    data-word="bicycle"
+                    role="img"
+                    aria-label="Gaze Attention map while generating the word bicycle: only two regions on the bicycle are attended."
+                  ></canvas>
+                </div>
+              </div>
+              <div class="gv-legend" style="margin-top: 12px">
+                <span>low</span>
+                <span class="gv-legend-bar is-heat"></span>
+                <span>high</span>
+              </div>
+              <figcaption class="figure-caption">
+                Attention maps of one head at layer 15 over the 1,024 visual
+                tokens of a 512 px image (log-normalized). Dense attention
+                spreads over the whole image. Gaze Attention first selects two
+                regions and attends only inside them.
+              </figcaption>
+            </figure>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="prior-approaches">
+        <div class="content-narrow">
+          <h2 class="section-title">Deciding Before Generation Is Too Early</h2>
+          <p class="section-lead">
+            Efficient MLLMs already reduce the visual information that the LLM
+            attends to. But they fix it during prefill, before it is known which
+            regions each prediction will need.
+          </p>
+
+          <figure class="figure-card">
+            <div class="figure-scroll">
+              <img
+                src="assets/figures/approaches.png"
+                width="2426"
+                height="698"
+                alt="Four diagrams: token compression reduces vision tokens before the LLM; frame-level and token-level KV-cache eviction discard vision KV-caches during prefill; Gaze Attention keeps all vision KV-caches and selects the regions each generated word needs."
+              />
+            </div>
+            <figcaption class="figure-caption">
+              Token compression and KV-cache eviction reduce the visual KV cache
+              during prefill.<br />
+              Gaze Attention keeps the cache and selects
+              query-relevant gaze regions at each generation step.
+            </figcaption>
+          </figure>
+
+          <div class="approach-grid">
+            <article class="approach-card">
+              <h3>Token compression</h3>
+              <p class="approach-examples">VideoChat-Flash, F-16</p>
+              <div class="decision-line" aria-hidden="true">
+                <span class="is-select"></span><span></span><span></span
+                ><span></span><span></span><span></span>
+              </div>
+              <div class="decision-axis" aria-hidden="true">
+                <span>Prefill</span><span>Decoding steps &rarr;</span>
+              </div>
+              <p class="decision-when">Decided once, before the LLM</p>
+              <p>
+                Visual tokens are pooled or pruned up front, so fine details are
+                blurred or gone for every later prediction.
+              </p>
+            </article>
+
+            <article class="approach-card">
+              <h3>KV-cache eviction</h3>
+              <p class="approach-examples">
+                ReKV, HERMES, InfiniPot-V, StreamMem
+              </p>
+              <div class="decision-line" aria-hidden="true">
+                <span class="is-select"></span><span></span><span></span
+                ><span></span><span></span><span></span>
+              </div>
+              <div class="decision-axis" aria-hidden="true">
+                <span>Prefill</span><span>Decoding steps &rarr;</span>
+              </div>
+              <p class="decision-when">Decided once, from the question</p>
+              <p>
+                Visual entries are scored once and the rest is evicted. The
+                retained set stays fixed, even when later words need different
+                evidence.
+              </p>
+            </article>
+
+            <article class="approach-card is-ours">
+              <h3>Gaze Attention</h3>
+              <p class="approach-examples">Ours</p>
+              <div class="decision-line" aria-hidden="true">
+                <span></span><span class="is-select"></span
+                ><span class="is-select"></span><span class="is-select"></span
+                ><span class="is-select"></span><span class="is-select"></span>
+              </div>
+              <div class="decision-axis" aria-hidden="true">
+                <span>Prefill</span><span>Decoding steps &rarr;</span>
+              </div>
+              <p class="decision-when">Decided at every decoding step</p>
+              <p>
+                The full KV cache is kept and each query is routed to its own
+                regions. A region skipped now can be attended to later.
+              </p>
+            </article>
+          </div>
+
+          <p class="inline-jump">
+            <a href="#panel-eviction" data-open-tab="tab-eviction"
+              >See what a fixed selection misses during generation &darr;</a
+            >
+          </p>
+        </div>
+      </section>
+
+      <section class="section" id="method">
+        <div class="content-narrow">
+          <h2 class="section-title">Gaze Attention: Select, Then Attend</h2>
+          <p class="section-lead">
+            Inside every LLM layer, Gaze Attention replaces dense attention over
+            visual tokens with two steps: a lightweight routing step picks a few
+            regions, and attention is computed only over them.
+          </p>
+
+          <div class="method-card">
+            <figure class="workflow-figure">
+              <div class="figure-scroll">
+                <img
+                  src="assets/figures/method-overview.png"
+                  width="2410"
+                  height="719"
+                  alt="Overview of Gaze Attention: visual keys are grouped into regions and summarized by descriptors, each decoding query routes its attention to the relevant regions, and learnable context tokens preserve the global context. The attention masks of dense attention and Gaze Attention are compared on the right."
+                />
+              </div>
+            </figure>
+
+            <ol class="step-grid">
+              <li class="step-card">
+                <div class="step-head">
+                  <span class="step-number">1</span>
+                  <h3>Gaze regions and descriptors</h3>
+                </div>
+                <p>
+                  The cached keys of the visual tokens are arranged in their
+                  spatial and temporal layout and split into regions of \(r^h
+                  \times r^w \times r^t\) tokens (6 &times; 6 &times; 1 by
+                  default). A descriptor \(d_g^u\), the mean of the keys of a
+                  region, summarizes it without extra parameters.
+                </p>
+              </li>
+              <li class="step-card">
+                <div class="step-head">
+                  <span class="step-number">2</span>
+                  <h3>Visual routing</h3>
+                </div>
+                <p>
+                  At decoding step \(j\), the query scores every descriptor,
+                  \(s_g^u = q_j^{\top} d_g^u\), and attends only to the
+                  key&ndash;value pairs of its Top-K regions. Nothing is
+                  evicted, so a region skipped now can be selected later.
+                </p>
+              </li>
+              <li class="step-card">
+                <div class="step-head">
+                  <span class="step-number">3</span>
+                  <h3>Learnable context tokens</h3>
+                </div>
+                <p>
+                  A few learnable tokens (4 by default) are appended to each
+                  image or frame and attend only to it, which yields a compact
+                  summary \(k_C^u\). It stays visible to every query and keeps
+                  the global scene in view while the routed regions change.
+                </p>
+              </li>
+            </ol>
+
+            <div class="note-grid">
+              <div class="note-card">
+                <h3>Stable training</h3>
+                <p>
+                  Routing is trained with the next-token prediction loss only.
+                  Because queries and descriptors are barely related early in
+                  training, a progressive Top-K schedule starts dense and
+                  gradually reduces the number of selected regions.
+                </p>
+              </div>
+              <div class="note-card">
+                <h3>What a query attends to</h3>
+                <p>
+                  An 8-frame video has 8 &times; 576 = 4,608 visual tokens. With
+                  regions of 36 tokens, 20 routed regions and 4 context tokens
+                  per frame, each query attends to 20 &times; 36 + 4 &times; 8 =
+                  752 entries: 16.3% of dense attention.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="gaze-in-action">
+        <div class="content-narrow">
+          <h2 class="section-title">Watch the Gaze Shift</h2>
+          <p class="section-lead">
+            Nothing tells the model where to look. Still, the routed regions
+            follow the content being generated, within images and across video
+            frames.
+          </p>
+
+          <div class="tab-pills" role="tablist" aria-label="Routing examples">
+            <button
+              type="button"
+              role="tab"
+              id="tab-eviction"
+              aria-controls="panel-eviction"
+              aria-selected="true"
+            >
+              Images (Ours vs. Eviction methods)
+            </button>
+            <button
+              type="button"
+              role="tab"
+              id="tab-video"
+              aria-controls="panel-video"
+              aria-selected="false"
+            >
+              Videos
+            </button>
+          </div>
+
+          <div
+            class="tab-panel"
+            role="tabpanel"
+            id="panel-eviction"
+            aria-labelledby="tab-eviction"
+          >
+            <h3 class="panel-heading">
+              A fixed selection can miss what later words need
+            </h3>
+            <p class="panel-lead">
+              InfiniPot-V and HERMES keep one set of visual tokens for the whole
+              answer. Gaze Attention selects regions again for every generated
+              token. Bright areas are the visual tokens attended to at layers 10
+              and 23.
+            </p>
+
+            <div class="selection-top">
+              <div class="selection-card is-photo">
+                <img
+                  src="assets/figures/routing/photo.jpg"
+                  width="480"
+                  height="480"
+                  loading="lazy"
+                  alt="A corgi holding white flowers in its mouth next to a black and white cat on grass."
+                />
+                <p class="qa-question">
+                  Q. What is the dog holding in its mouth, and what is the cat
+                  doing?
+                </p>
+              </div>
+
+              <div class="selection-card">
+                <h4>InfiniPot-V</h4>
+                <p>
+                  The dog is holding a piece of
+                  <span class="word-error">paper</span> in its mouth, and the
+                  cat is looking at the dog.
+                </p>
+                <div class="panel-pair">
+                  <img
+                    src="assets/figures/routing/infinipot-l10.jpg"
+                    width="480"
+                    height="480"
+                    loading="lazy"
+                    alt="Tokens kept by InfiniPot-V at layer 10: scattered patches across the image."
+                  />
+                  <img
+                    src="assets/figures/routing/infinipot-l23.jpg"
+                    width="480"
+                    height="480"
+                    loading="lazy"
+                    alt="Tokens kept by InfiniPot-V at layer 23: scattered patches across the image."
+                  />
+                </div>
+                <p class="kv-note">
+                  KV size 24 / 121, unchanged during decoding
+                </p>
+              </div>
+
+              <div class="selection-card">
+                <h4>HERMES</h4>
+                <p>
+                  The dog is holding a bunch of white flowers. The cat is
+                  standing, <span class="word-error">looking at it</span> with
+                  an attentive gaze.
+                </p>
+                <div class="panel-pair">
+                  <img
+                    src="assets/figures/routing/hermes-l10.jpg"
+                    width="480"
+                    height="480"
+                    loading="lazy"
+                    alt="Tokens kept by HERMES at layer 10: mostly the bottom strip of grass and a few patches."
+                  />
+                  <img
+                    src="assets/figures/routing/hermes-l23.jpg"
+                    width="480"
+                    height="480"
+                    loading="lazy"
+                    alt="Tokens kept by HERMES at layer 23: scattered patches on the dog and the cat."
+                  />
+                </div>
+                <p class="kv-note">
+                  KV size 39 / 196, unchanged during decoding
+                </p>
+              </div>
+            </div>
+
+            <div class="selection-ours">
+              <div class="selection-ours-head">
+                <h4>Gaze Attention</h4>
+                <span class="kv-note">KV size 18 / 144 at every step</span>
+              </div>
+              <p>
+                The dog is holding a bunch of white
+                <span class="word-chip">flowers</span> in its mouth, and the
+                <span class="word-chip">cat</span> is sitting on the
+                <span class="word-chip">grass</span>.
+              </p>
+              <div class="selection-steps">
+                <div class="selection-step">
+                  <span class="selection-step-label"
+                    >While generating &ldquo;flowers&rdquo;</span
+                  >
+                  <div class="panel-pair">
+                    <img
+                      src="assets/figures/routing/gaze-flowers-l10.jpg"
+                      width="480"
+                      height="480"
+                      loading="lazy"
+                      alt="Regions routed at layer 10 for the word flowers: the flowers in the dog's mouth."
+                    />
+                    <img
+                      src="assets/figures/routing/gaze-flowers-l23.jpg"
+                      width="480"
+                      height="480"
+                      loading="lazy"
+                      alt="Regions routed at layer 23 for the word flowers: the dog's head and the flowers."
+                    />
+                  </div>
+                </div>
+                <div class="selection-step">
+                  <span class="selection-step-label"
+                    >While generating &ldquo;cat&rdquo;</span
+                  >
+                  <div class="panel-pair">
+                    <img
+                      src="assets/figures/routing/gaze-cat-l10.jpg"
+                      width="480"
+                      height="480"
+                      loading="lazy"
+                      alt="Regions routed at layer 10 for the word cat: the cat."
+                    />
+                    <img
+                      src="assets/figures/routing/gaze-cat-l23.jpg"
+                      width="480"
+                      height="480"
+                      loading="lazy"
+                      alt="Regions routed at layer 23 for the word cat: the cat."
+                    />
+                  </div>
+                </div>
+                <div class="selection-step">
+                  <span class="selection-step-label"
+                    >While generating &ldquo;grass&rdquo;</span
+                  >
+                  <div class="panel-pair">
+                    <img
+                      src="assets/figures/routing/gaze-grass-l10.jpg"
+                      width="480"
+                      height="480"
+                      loading="lazy"
+                      alt="Regions routed at layer 10 for the word grass: grass regions."
+                    />
+                    <img
+                      src="assets/figures/routing/gaze-grass-l23.jpg"
+                      width="480"
+                      height="480"
+                      loading="lazy"
+                      alt="Regions routed at layer 23 for the word grass: the grass at the bottom of the image."
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div
+            class="tab-panel"
+            role="tabpanel"
+            id="panel-video"
+            aria-labelledby="tab-video"
+          >
+            <h3 class="panel-heading">Routing across space and time</h3>
+            <p class="panel-lead">
+              In videos, a query selects frame&ndash;region pairs. Red boxes
+              mark the regions attended to while the highlighted word is
+              generated.
+            </p>
+
+            <article class="video-example">
+              <div class="qa-block">
+                <p class="qa-question">
+                  Q. What is the man helping the woman with, and what is she
+                  enjoying?
+                </p>
+                <p class="qa-answer">
+                  A. The man is <span class="word-chip">helping</span> the woman
+                  to climb up the ship's ladder.
+                  <span class="word-chip">She</span> is enjoying the view of the
+                  sunset.
+                </p>
+              </div>
+              <div class="strip">
+                <span class="strip-label"
+                  >While generating &ldquo;helping&rdquo;</span
+                >
+                <div class="strip-scroll">
+                  <img
+                    src="assets/figures/video/titanic-helping.jpg"
+                    width="2000"
+                    height="281"
+                    loading="lazy"
+                    alt="Seven video frames. The routed regions cover the man's hand holding the woman's hand and the two people standing at the bow of the ship."
+                  />
+                </div>
+              </div>
+              <div class="strip">
+                <span class="strip-label"
+                  >While generating &ldquo;She&rdquo;</span
+                >
+                <div class="strip-scroll">
+                  <img
+                    src="assets/figures/video/titanic-she.jpg"
+                    width="2000"
+                    height="281"
+                    loading="lazy"
+                    alt="The same seven frames. The routed regions now cover the woman and the sunset sky in four frames."
+                  />
+                </div>
+              </div>
+            </article>
+
+            <article class="video-example">
+              <div class="qa-block">
+                <p class="qa-question">
+                  Q. What happens in this video? Describe the actions of the man
+                  and the boy briefly.
+                </p>
+                <p class="qa-answer">
+                  A. A man climbs down a staircase and
+                  <span class="word-chip">falls</span> on the floor. A
+                  <span class="word-chip">boy</span> sits on the stairs and
+                  laughs.
+                </p>
+              </div>
+              <div class="strip">
+                <span class="strip-label"
+                  >While generating &ldquo;falls&rdquo;</span
+                >
+                <div class="strip-scroll">
+                  <img
+                    src="assets/figures/video/homealone-falls.jpg"
+                    width="2000"
+                    height="243"
+                    loading="lazy"
+                    alt="Eight video frames. The routed regions cover the man on the staircase in the first frame and the man lying on the floor in the third frame."
+                  />
+                </div>
+              </div>
+              <div class="strip">
+                <span class="strip-label"
+                  >While generating &ldquo;boy&rdquo;</span
+                >
+                <div class="strip-scroll">
+                  <img
+                    src="assets/figures/video/homealone-boy.jpg"
+                    width="2000"
+                    height="243"
+                    loading="lazy"
+                    alt="The same eight frames. The routed regions now cover the boy in the fourth and the seventh frame."
+                  />
+                </div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="results">
+        <div class="content-narrow">
+          <h2 class="section-title">Results</h2>
+          <p class="section-lead">
+            We build Cambrian-4B (SigLIP2-So/16 with Qwen3-4B) and Cambrian-7B
+            (with Qwen2.5-7B) and train dense-attention and Gaze Attention
+            models with an identical architecture and token-matched training.
+            They are evaluated on 13 image and 6 video understanding benchmarks.
+          </p>
+
+          <div class="kpi-row">
+            <div class="kpi-tile">
+              <span class="kpi-kicker">Up to</span>
+              <span class="kpi-value">90<small>%</small></span>
+              <span class="kpi-label">fewer visual KV entries</span>
+              <span class="kpi-detail"
+                >Video: 2K instead of 20K entries, still +1.1 average
+                points</span
+              >
+            </div>
+            <div class="kpi-tile">
+              <span class="kpi-kicker">13 image benchmarks</span>
+              <span class="kpi-value">+1.5</span>
+              <span class="kpi-label">average points over dense attention</span>
+              <span class="kpi-detail"
+                >with 148 instead of 576 visual KV entries per query</span
+              >
+            </div>
+            <div class="kpi-tile">
+              <span class="kpi-kicker">6 video benchmarks</span>
+              <span class="kpi-value">+1.4</span>
+              <span class="kpi-label">average points over dense attention</span>
+              <span class="kpi-detail"
+                >with 4K instead of 20K visual KV entries per query</span
+              >
+            </div>
+            <div class="kpi-tile">
+              <span class="kpi-kicker">Attention FLOPs</span>
+              <span class="kpi-value">&minus;83.9<small>%</small></span>
+              <span class="kpi-label">with 1.5K instead of 10K entries</span>
+              <span class="kpi-detail"
+                >and 79.8% less KV-cache memory on the GPU</span
+              >
+            </div>
+          </div>
+
+          <nav class="custom-nav-pills" aria-label="Result navigation">
+            <a class="nav-link" href="#image-qa">Image understanding</a>
+            <a class="nav-link" href="#video-qa">Video understanding</a>
+            <a class="nav-link" href="#efficiency">Efficiency</a>
+            <a class="nav-link" href="#analysis">Routing &amp; ablations</a>
+          </nav>
+
+          <h3 class="findings-title">Results Summary</h3>
+          <ul class="findings-list">
+            <li class="finding-item">
+              Selecting visual regions for each decoding query matches or
+              improves the accuracy of dense attention while attending to up to
+              90% fewer visual KV entries.
+            </li>
+            <li class="finding-item">
+              Under matched visual KV budgets, Gaze Attention achieves higher
+              average performance than KV-cache eviction and than dense
+              attention over fewer tokens.
+            </li>
+            <li class="finding-item">
+              Routing learned from next-token prediction alone follows the
+              content being generated: the model shifts its gaze without any
+              gaze supervision.
+            </li>
+          </ul>
+
+          <article
+            class="research-question"
+            id="image-qa"
+            data-default-open="true"
+          >
+            <div class="question-header">
+              <div class="question-number">1</div>
+              <h3 class="question-title">
+                Image understanding: accuracy holds as the visual KV budget
+                shrinks
+              </h3>
+              <button
+                class="question-toggle"
+                type="button"
+                aria-expanded="true"
+                aria-label="Toggle image understanding results"
+              >
+                <span class="chevron" aria-hidden="true">&rsaquo;</span>
+              </button>
+            </div>
+            <div class="question-content">
+              <div class="result-layout">
+                <div class="chart-card">
+                  <h4 class="chart-title">
+                    Average score change vs. visual KV budget
+                  </h4>
+                  <p class="chart-subtitle">
+                    Average over the 13 image benchmarks, relative to the
+                    dense-attention baseline of each model
+                  </p>
+                  <ul class="chart-legend" id="image-chart-legend"></ul>
+                  <div
+                    id="image-chart"
+                    role="img"
+                    aria-label="Line chart. As fewer visual KV entries are attended to, InfiniPot-V and HERMES lose up to 10.5 and 10.1 average points, while Gaze Attention stays 0.7 to 1.5 points above its dense baseline."
+                  ></div>
+                  <details class="table-view">
+                    <summary>Show the numbers</summary>
+                    <div class="table-scroll">
+                      <table class="data-table">
+                        <thead>
+                          <tr>
+                            <th scope="col">Model</th>
+                            <th scope="col">Visual KV entries</th>
+                            <th scope="col">Avg.</th>
+                            <th scope="col">Change</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <th scope="row">Qwen2.5-VL-3B</th>
+                            <td>256</td>
+                            <td>63.3</td>
+                            <td>&ndash;</td>
+                          </tr>
+                          <tr>
+                            <th scope="row">+ InfiniPot-V</th>
+                            <td>128</td>
+                            <td>60.3</td>
+                            <td>&minus;3.0</td>
+                          </tr>
+                          <tr>
+                            <th scope="row">+ InfiniPot-V</th>
+                            <td>50</td>
+                            <td>52.8</td>
+                            <td>&minus;10.5</td>
+                          </tr>
+                          <tr>
+                            <th scope="row">LLaVA-OV-7B</th>
+                            <td>196</td>
+                            <td>62.4</td>
+                            <td>&ndash;</td>
+                          </tr>
+                          <tr>
+                            <th scope="row">+ HERMES</th>
+                            <td>100</td>
+                            <td>57.9</td>
+                            <td>&minus;4.5</td>
+                          </tr>
+                          <tr>
+                            <th scope="row">+ HERMES</th>
+                            <td>40</td>
+                            <td>52.3</td>
+                            <td>&minus;10.1</td>
+                          </tr>
+                          <tr>
+                            <th scope="row">Cambrian-4B</th>
+                            <td>576</td>
+                            <td>59.7</td>
+                            <td>&ndash;</td>
+                          </tr>
+                          <tr class="highlight-row">
+                            <th scope="row">+ Gaze Attention</th>
+                            <td>288 + 4</td>
+                            <td>61.1</td>
+                            <td>+1.4</td>
+                          </tr>
+                          <tr class="highlight-row">
+                            <th scope="row">+ Gaze Attention</th>
+                            <td>144 + 4</td>
+                            <td>61.2</td>
+                            <td>+1.5</td>
+                          </tr>
+                          <tr class="highlight-row">
+                            <th scope="row">+ Gaze Attention</th>
+                            <td>72 + 4</td>
+                            <td>60.4</td>
+                            <td>+0.7</td>
+                          </tr>
+                          <tr>
+                            <th scope="row">Cambrian-4B + token compression</th>
+                            <td>144</td>
+                            <td>57.8</td>
+                            <td>&ndash;</td>
+                          </tr>
+                          <tr class="highlight-row">
+                            <th scope="row">+ Gaze Attention</th>
+                            <td>54 + 4</td>
+                            <td>59.2</td>
+                            <td>+1.4</td>
+                          </tr>
+                          <tr class="highlight-row">
+                            <th scope="row">+ Gaze Attention</th>
+                            <td>36 + 4</td>
+                            <td>58.3</td>
+                            <td>+0.5</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </details>
+                </div>
+
+                <ul class="dot-list">
+                  <li>
+                    KV-cache eviction degrades quickly on single images: keeping
+                    about 20% of the visual entries costs InfiniPot-V 10.5 and
+                    HERMES 10.1 average points.
+                  </li>
+                  <li>
+                    Gaze Attention stays above its dense baseline at every
+                    budget: +1.5 points with 144 of 576 entries, and +0.7 with
+                    only 72.
+                  </li>
+                  <li>
+                    It also combines with input-level token compression: with 36
+                    routed entries it scores 58.3, comparable to dense attention
+                    over 144 entries (57.8).
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </article>
+
+          <article class="research-question" id="video-qa">
+            <div class="question-header">
+              <div class="question-number">2</div>
+              <h3 class="question-title">
+                Video understanding: better than dense attention with a fraction
+                of the cache
+              </h3>
+              <button
+                class="question-toggle"
+                type="button"
+                aria-expanded="true"
+                aria-label="Toggle video understanding results"
+              >
+                <span class="chevron" aria-hidden="true">&rsaquo;</span>
+              </button>
+            </div>
+            <div class="question-content">
+              <div class="result-layout">
+                <div class="chart-card">
+                  <h4 class="chart-title">
+                    Average score change on six video benchmarks
+                  </h4>
+                  <p class="chart-subtitle">
+                    Relative to dense attention over the full visual KV cache;
+                    the label gives the visual KV entries attended to
+                  </p>
+                  <ul class="chart-legend">
+                    <li>
+                      <span class="legend-swatch swatch-gaze"></span>Gaze
+                      Attention
+                    </li>
+                    <li>
+                      <span class="legend-swatch swatch-other"></span>Baselines
+                    </li>
+                  </ul>
+
+                  <div class="delta-group">
+                    <h4>
+                      Cambrian-4B
+                      <span>dense baseline: 20K visual KV entries</span>
+                    </h4>
+                    <div
+                      class="delta-row"
+                      tabindex="0"
+                      data-tip-title="&minus;1.7 points"
+                      data-tip-body="Dense attention with fewer input tokens, 4K entries|Average 60.6 vs. 62.2 with 20K entries (difference of the unrounded averages)"
+                    >
+                      <span class="delta-label"
+                        >Dense, fewer tokens<em>4K entries</em></span
+                      >
+                      <span class="delta-track" style="--w: 28.33%">
+                        <span class="delta-bar is-neg"></span>
+                        <span class="delta-value is-neg">&minus;1.7</span>
+                      </span>
+                    </div>
+                    <div
+                      class="delta-row"
+                      tabindex="0"
+                      data-tip-title="&minus;0.2 points"
+                      data-tip-body="HERMES, 4K of 20K entries"
+                    >
+                      <span class="delta-label">HERMES<em>4K entries</em></span>
+                      <span class="delta-track" style="--w: 3.33%">
+                        <span class="delta-bar is-neg"></span>
+                        <span class="delta-value is-neg">&minus;0.2</span>
+                      </span>
+                    </div>
+                    <div
+                      class="delta-row"
+                      tabindex="0"
+                      data-tip-title="+1.4 points"
+                      data-tip-body="Gaze Attention, 4K of 20K entries|Average 63.6 vs. 62.2 with dense attention"
+                    >
+                      <span class="delta-label"
+                        >Gaze Attention<em>4K entries</em></span
+                      >
+                      <span class="delta-track" style="--w: 23.33%">
+                        <span class="delta-bar is-pos is-gaze"></span>
+                        <span class="delta-value is-pos">+1.4</span>
+                      </span>
+                    </div>
+                    <div
+                      class="delta-row"
+                      tabindex="0"
+                      data-tip-title="+1.1 points"
+                      data-tip-body="Gaze Attention, 2K of 20K entries (90% fewer)"
+                    >
+                      <span class="delta-label"
+                        >Gaze Attention<em>2K entries</em></span
+                      >
+                      <span class="delta-track" style="--w: 18.33%">
+                        <span class="delta-bar is-pos is-gaze"></span>
+                        <span class="delta-value is-pos">+1.1</span>
+                      </span>
+                    </div>
+                  </div>
+
+                  <div class="delta-group">
+                    <h4>
+                      Cambrian-7B
+                      <span>dense baseline: 10K visual KV entries</span>
+                    </h4>
+                    <div
+                      class="delta-row"
+                      tabindex="0"
+                      data-tip-title="+0.4 points"
+                      data-tip-body="HERMES, 1.5K of 10K entries"
+                    >
+                      <span class="delta-label"
+                        >HERMES<em>1.5K entries</em></span
+                      >
+                      <span class="delta-track" style="--w: 6.67%">
+                        <span class="delta-bar is-pos"></span>
+                        <span class="delta-value is-pos">+0.4</span>
+                      </span>
+                    </div>
+                    <div
+                      class="delta-row"
+                      tabindex="0"
+                      data-tip-title="+1.0 points"
+                      data-tip-body="Gaze Attention, 1.5K of 10K entries"
+                    >
+                      <span class="delta-label"
+                        >Gaze Attention<em>1.5K entries</em></span
+                      >
+                      <span class="delta-track" style="--w: 16.67%">
+                        <span class="delta-bar is-pos is-gaze"></span>
+                        <span class="delta-value is-pos">+1.0</span>
+                      </span>
+                    </div>
+                  </div>
+                  <div class="delta-axis" aria-hidden="true">
+                    <span></span>
+                    <span class="delta-axis-scale"
+                      ><span>&minus;3</span><span>0</span><span>+3</span></span
+                    >
+                  </div>
+
+                  <details class="table-view">
+                    <summary>Show the numbers</summary>
+                    <div class="table-scroll">
+                      <table class="data-table">
+                        <thead>
+                          <tr>
+                            <th scope="col">Model</th>
+                            <th scope="col">KV</th>
+                            <th scope="col">VideoMME</th>
+                            <th scope="col">MLVU</th>
+                            <th scope="col">EgoSchema</th>
+                            <th scope="col">LongVideoB.</th>
+                            <th scope="col">NExT-QA</th>
+                            <th scope="col">TempCom.</th>
+                            <th scope="col">Change</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <th scope="row">Cambrian-4B</th>
+                            <td>20K</td>
+                            <td>58.8</td>
+                            <td>65.9</td>
+                            <td>53.5</td>
+                            <td>57.5</td>
+                            <td>77.1</td>
+                            <td>60.5</td>
+                            <td>&ndash;</td>
+                          </tr>
+                          <tr>
+                            <th scope="row">Cambrian-4B</th>
+                            <td>4K</td>
+                            <td>55.7</td>
+                            <td>61.4</td>
+                            <td>53.2</td>
+                            <td>54.0</td>
+                            <td>75.3</td>
+                            <td>63.7</td>
+                            <td>&minus;1.7</td>
+                          </tr>
+                          <tr>
+                            <th scope="row">+ HERMES</th>
+                            <td>4K</td>
+                            <td>58.1</td>
+                            <td>65.0</td>
+                            <td>53.4</td>
+                            <td>56.2</td>
+                            <td>76.5</td>
+                            <td>62.7</td>
+                            <td>&minus;0.2</td>
+                          </tr>
+                          <tr class="highlight-row">
+                            <th scope="row">+ Gaze Attention</th>
+                            <td>4K</td>
+                            <td>60.4</td>
+                            <td>67.5</td>
+                            <td>53.8</td>
+                            <td>56.8</td>
+                            <td>80.4</td>
+                            <td>62.9</td>
+                            <td>+1.4</td>
+                          </tr>
+                          <tr class="highlight-row">
+                            <th scope="row">+ Gaze Attention</th>
+                            <td>2K</td>
+                            <td>59.4</td>
+                            <td>67.1</td>
+                            <td>53.2</td>
+                            <td>56.6</td>
+                            <td>79.9</td>
+                            <td>63.8</td>
+                            <td>+1.1</td>
+                          </tr>
+                          <tr>
+                            <th scope="row">Cambrian-7B</th>
+                            <td>10K</td>
+                            <td>60.0</td>
+                            <td>66.5</td>
+                            <td>55.8</td>
+                            <td>58.9</td>
+                            <td>78.4</td>
+                            <td>60.9</td>
+                            <td>&ndash;</td>
+                          </tr>
+                          <tr>
+                            <th scope="row">+ HERMES</th>
+                            <td>1.5K</td>
+                            <td>60.1</td>
+                            <td>66.3</td>
+                            <td>55.6</td>
+                            <td>58.5</td>
+                            <td>78.1</td>
+                            <td>64.2</td>
+                            <td>+0.4</td>
+                          </tr>
+                          <tr class="highlight-row">
+                            <th scope="row">+ Gaze Attention</th>
+                            <td>1.5K</td>
+                            <td>60.4</td>
+                            <td>67.0</td>
+                            <td>56.2</td>
+                            <td>58.6</td>
+                            <td>80.4</td>
+                            <td>63.7</td>
+                            <td>+1.0</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </details>
+                </div>
+
+                <ul class="dot-list">
+                  <li>
+                    On Cambrian-4B, attending to 4K instead of 20K visual KV
+                    entries improves the average of the six benchmarks by 1.4
+                    points. With 2K entries, 90% fewer, the gain is still 1.1.
+                  </li>
+                  <li>
+                    Under the same 4K budget, a dense model that simply receives
+                    fewer tokens averages 60.6 and HERMES stays 0.2 below the
+                    baseline, while Gaze Attention reaches 63.6.
+                  </li>
+                  <li>
+                    The trend holds for Cambrian-7B: +1.0 points with 1.5K of
+                    10K entries.
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </article>
+
+          <article class="research-question" id="efficiency">
+            <div class="question-header">
+              <div class="question-number">3</div>
+              <h3 class="question-title">
+                Efficiency: attention FLOPs and KV-cache memory
+              </h3>
+              <button
+                class="question-toggle"
+                type="button"
+                aria-expanded="true"
+                aria-label="Toggle efficiency results"
+              >
+                <span class="chevron" aria-hidden="true">&rsaquo;</span>
+              </button>
+            </div>
+            <div class="question-content">
+              <div class="meter-grid">
+                <div class="meter-card">
+                  <div class="meter-head">
+                    <div>
+                      <h4 class="chart-title">Attention FLOPs</h4>
+                      <p class="chart-subtitle" style="margin-bottom: 0">
+                        GFLOPs, all attention layers
+                      </p>
+                    </div>
+                    <span class="meter-saving">&minus;83.9%</span>
+                  </div>
+                  <div
+                    class="meter-row"
+                    tabindex="0"
+                    data-tip-title="5.52 GFLOPs"
+                    data-tip-body="Dense attention over 10K visual KV entries"
+                  >
+                    <span class="meter-label">Dense</span>
+                    <span class="meter-track"
+                      ><span class="meter-seg is-dense" style="--w: 100%"></span
+                    ></span>
+                    <span class="meter-value">5.52</span>
+                  </div>
+                  <div
+                    class="meter-row"
+                    tabindex="0"
+                    data-tip-title="0.89 GFLOPs attention"
+                    data-tip-body="Gaze Attention over 1.5K visual KV entries|+ 0.19 routing, + 0.15 context tokens"
+                  >
+                    <span class="meter-label">Gaze</span>
+                    <span class="meter-track"
+                      ><span class="meter-seg is-attn" style="--w: 16.1%"></span
+                      ><span class="meter-seg is-route" style="--w: 3.4%"></span
+                      ><span class="meter-seg is-ctx" style="--w: 2.7%"></span
+                    ></span>
+                    <span class="meter-value">0.89 <small>+0.34</small></span>
+                  </div>
+                  <ul class="chart-legend">
+                    <li>
+                      <span class="legend-swatch swatch-gaze"></span>Attention
+                      0.89
+                    </li>
+                    <li>
+                      <span class="legend-swatch swatch-gaze-light"></span
+                      >Routing 0.19
+                    </li>
+                    <li>
+                      <span class="legend-swatch swatch-gaze-pale"></span
+                      >Context tokens 0.15
+                    </li>
+                  </ul>
+                </div>
+
+                <div class="meter-card">
+                  <div class="meter-head">
+                    <div>
+                      <h4 class="chart-title">KV-cache memory</h4>
+                      <p class="chart-subtitle" style="margin-bottom: 0">
+                        GB on the GPU
+                      </p>
+                    </div>
+                    <span class="meter-saving">&minus;79.8%</span>
+                  </div>
+                  <div
+                    class="meter-row"
+                    tabindex="0"
+                    data-tip-title="1.37 GB"
+                    data-tip-body="Dense attention, 10K visual KV entries"
+                  >
+                    <span class="meter-label">Dense</span>
+                    <span class="meter-track"
+                      ><span class="meter-seg is-dense" style="--w: 100%"></span
+                    ></span>
+                    <span class="meter-value">1.37</span>
+                  </div>
+                  <div
+                    class="meter-row"
+                    tabindex="0"
+                    data-tip-title="0.27 GB"
+                    data-tip-body="Gaze Attention, 1.5K visual KV entries on the GPU"
+                  >
+                    <span class="meter-label">Gaze</span>
+                    <span class="meter-track"
+                      ><span class="meter-seg is-attn" style="--w: 19.7%"></span
+                    ></span>
+                    <span class="meter-value">0.27</span>
+                  </div>
+                  <ul class="chart-legend">
+                    <li>
+                      <span class="legend-swatch swatch-other"></span>Dense
+                      attention, 10K visual KV entries
+                    </li>
+                    <li>
+                      <span class="legend-swatch swatch-gaze"></span>Gaze
+                      Attention, 1.5K
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              <ul class="dot-list result-notes">
+                <li>
+                  Each query attends to 1.5K instead of 10K visual KV entries,
+                  which reduces the attention FLOPs by 83.9%. Routing and the
+                  context tokens add 0.19 and 0.15 GFLOPs.
+                </li>
+                <li>
+                  With KV-cache offloading, the full cache stays in CPU memory
+                  or on disk and only the selected regions are loaded onto the
+                  GPU: 79.8% less KV-cache memory.
+                </li>
+              </ul>
+            </div>
+          </article>
+
+          <article class="research-question" id="analysis">
+            <div class="question-header">
+              <div class="question-number">4</div>
+              <h3 class="question-title">
+                Analysis: does routing find the right regions?
+              </h3>
+              <button
+                class="question-toggle"
+                type="button"
+                aria-expanded="true"
+                aria-label="Toggle routing analysis and ablations"
+              >
+                <span class="chevron" aria-hidden="true">&rsaquo;</span>
+              </button>
+            </div>
+            <div class="question-content">
+              <div class="analysis-grid">
+                <div class="chart-card">
+                  <h4 class="chart-title">Routing accuracy</h4>
+                  <p class="chart-subtitle">
+                    Generated tokens whose routed region overlaps the object
+                    they describe (%)
+                  </p>
+                  <div
+                    class="hbar-row"
+                    tabindex="0"
+                    data-tip-title="11.2% &plusmn; 1.4"
+                    data-tip-body="Random routing"
+                  >
+                    <span class="hbar-label">Random</span>
+                    <span class="hbar-track"
+                      ><span
+                        class="hbar-fill is-other"
+                        style="--w: 11.2%"
+                      ></span
+                    ></span>
+                    <span class="hbar-value"
+                      >11.2 <small>&plusmn;1.4</small></span
+                    >
+                  </div>
+                  <div
+                    class="hbar-row"
+                    tabindex="0"
+                    data-tip-title="56.6% &plusmn; 2.3"
+                    data-tip-body="Gaze Attention, layer 9"
+                  >
+                    <span class="hbar-label">Layer 9</span>
+                    <span class="hbar-track"
+                      ><span class="hbar-fill" style="--w: 56.6%"></span
+                    ></span>
+                    <span class="hbar-value"
+                      >56.6 <small>&plusmn;2.3</small></span
+                    >
+                  </div>
+                  <div
+                    class="hbar-row"
+                    tabindex="0"
+                    data-tip-title="57.7% &plusmn; 2.1"
+                    data-tip-body="Gaze Attention, layer 15"
+                  >
+                    <span class="hbar-label">Layer 15</span>
+                    <span class="hbar-track"
+                      ><span class="hbar-fill" style="--w: 57.7%"></span
+                    ></span>
+                    <span class="hbar-value"
+                      >57.7 <small>&plusmn;2.1</small></span
+                    >
+                  </div>
+                  <div
+                    class="hbar-row"
+                    tabindex="0"
+                    data-tip-title="51.3% &plusmn; 2.7"
+                    data-tip-body="Gaze Attention, layer 21"
+                  >
+                    <span class="hbar-label">Layer 21</span>
+                    <span class="hbar-track"
+                      ><span class="hbar-fill" style="--w: 51.3%"></span
+                    ></span>
+                    <span class="hbar-value"
+                      >51.3 <small>&plusmn;2.7</small></span
+                    >
+                  </div>
+                  <p class="chart-note">
+                    Mean &plusmn; standard deviation over three seeds.
+                  </p>
+                </div>
+
+                <div class="chart-card">
+                  <h4 class="chart-title">Learnable context tokens</h4>
+                  <p class="chart-subtitle">
+                    Average score relative to the default of 4 tokens
+                  </p>
+                  <div
+                    id="context-chart"
+                    role="img"
+                    aria-label="Line chart. Relative to 4 context tokens: no context tokens minus 0.9, 2 tokens minus 0.4, 16 tokens plus 0.4, 32 tokens plus 0.6."
+                  ></div>
+                </div>
+
+                <div class="chart-card">
+                  <h4 class="chart-title">Gaze region size</h4>
+                  <p class="chart-subtitle">
+                    Average score relative to the default of 6 &times; 6 tokens
+                  </p>
+                  <div
+                    id="region-chart"
+                    role="img"
+                    aria-label="Line chart. Relative to 6 by 6 regions: 1 by 1 and 2 by 2 plus 0.2, 4 by 4 equal, 12 by 12 minus 0.5."
+                  ></div>
+                </div>
+              </div>
+
+              <ul class="dot-list result-notes">
+                <li>
+                  For 200 images, each generated caption is split into phrases
+                  and each token is aligned to one of them. A token counts as
+                  correct when its routed region overlaps the segmentation mask
+                  of its phrase. Gaze Attention reaches 51.3&ndash;57.7% against
+                  11.2% for random routing, without any supervision of where to
+                  look.
+                </li>
+                <li>
+                  Context tokens add global information that the routed regions
+                  miss: removing them costs 0.9 points, and more than 4 tokens
+                  give diminishing returns while their cost grows with the
+                  number of frames.
+                </li>
+                <li>
+                  Finer regions score slightly higher but multiply the routing
+                  candidates, and 12 &times; 12 regions are too coarse. Regions
+                  of 6 &times; 6 tokens balance both.
+                </li>
+                <li>
+                  The progressive Top-K schedule matters: enforcing sparse
+                  routing from the first training step, before reliable routing
+                  signals emerge, lowers the average image score.
+                </li>
+              </ul>
+            </div>
+          </article>
+
+        </div>
+      </section>
+
+      <section class="section" id="citation">
+        <div class="content-narrow">
+          <h2 class="section-title">Citation</h2>
+          <div class="citation-box">
+            <pre><code>@inproceedings{song2026gazeattention,
+  title     = {Gaze Attention: Query-Adaptive Visual Routing for Efficient Multimodal {LLM}s},
+  author    = {Song, Junha and Heo, Byeongho and Gu, Geonmo and Choo, Jaegul and Han, Dongyoon and Yun, Sangdoo},
+  booktitle = {Third Conference on Language Modeling (CoLM)},
+  year      = {2026}
+}</code></pre>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="acknowledgements">
+        <div class="content-narrow">
+          <h2 class="section-title">Acknowledgements</h2>
+          <div class="closing-text">
+            <p>
+              This page follows the style of our
+              <a
+                href="https://june-page.github.io/pivot/"
+                target="_blank"
+                rel="noopener noreferrer"
+                >PIVOT</a
+              >
+              and
+              <a
+                href="https://june-page.github.io/mmser/"
+                target="_blank"
+                rel="noopener noreferrer"
+                >MM-SeR</a
+              >
+              pages, which were developed with reference to
+              <a
+                href="https://davidfan.io/webssl/"
+                target="_blank"
+                rel="noopener noreferrer"
+                >Web-SSL</a
+              >.
+            </p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="container">
+        <p>
+          Gaze Attention: Query-Adaptive Visual Routing for Efficient Multimodal
+          LLMs
+        </p>
+        <p>CoLM 2026</p>
+        <p>sb020518@gmail.com</p>
+      </div>
+    </footer>
+
+    <script src="js/gaze-demo-data.js"></script>
+    <script src="js/gaze-viewer.js"></script>
+    <script src="js/charts.js"></script>
+    <script src="js/page.js"></script>
+  </body>
+</html>

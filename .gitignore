@@ -1,0 +1,6 @@
+node_modules/
+test-results/
+playwright-report/
+screenshots/
+.DS_Store
+*.[pP][pP][tT][xX]
