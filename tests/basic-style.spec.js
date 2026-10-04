@@ -22,7 +22,10 @@ test("page renders without broken assets or horizontal overflow", async ({
   await expect(page.locator(".tldr-box")).toBeVisible();
   await expect(page.locator(".author-line a.author-link")).toHaveCount(6);
   await expect(page.locator(".institution-logo")).toHaveCount(2);
-  await expect(page.locator("#tldr .gaze-viewer canvas")).toBeVisible();
+  await expect(page.locator("#tldr .gaze-viewer canvas")).toHaveCount(2);
+  for (const canvas of await page.locator("#tldr .gaze-viewer canvas").all()) {
+    await expect(canvas).toBeVisible();
+  }
   await expect(page.locator("#image-chart svg")).toBeVisible();
   await expect(page.locator("#citation .citation-box")).toBeVisible();
 
@@ -72,33 +75,43 @@ test("page renders without broken assets or horizontal overflow", async ({
   });
 });
 
-test("gaze viewer follows the selected example, word and view", async ({
+test("gaze viewer shows dense and gaze attention for the selected word", async ({
   page,
 }) => {
   await page.goto(pageUrl);
 
   const viewer = page.locator("#tldr .gaze-viewer");
-  const status = viewer.locator(".gv-status");
-  const current = viewer.locator(".gv-token.is-current");
+  const panes = viewer.locator(".gv-pane");
+  const dense = viewer.locator(".gv-pane.is-dense");
+  const gaze = viewer.locator(".gv-pane.is-gaze");
 
   await expect(viewer.locator(".gv-thumb")).toHaveCount(6);
+  await expect(panes).toHaveCount(2);
+  await expect(panes.locator(".gv-pane-title")).toHaveText([
+    "Dense attention",
+    "Gaze Attention",
+  ]);
+  const thumbsBox = await viewer.locator(".gv-thumbs").boundingBox();
+  const denseBox = await dense.boundingBox();
+  const gazeBox = await gaze.boundingBox();
+  expect(thumbsBox.y + thumbsBox.height).toBeLessThanOrEqual(denseBox.y);
+  expect(denseBox.y + denseBox.height).toBeLessThanOrEqual(gazeBox.y);
+
   await viewer.getByRole("button", { name: /^Example 2:/ }).click();
-  await viewer.locator(".gv-token", { hasText: "bicycle" }).click();
-  await expect(current).toHaveText("bicycle");
-  await expect(status).toContainText("bicycle");
-  await expect(status).toContainText("128 of 1,024 visual tokens");
+  await gaze.locator(".gv-token", { hasText: "bicycle" }).click();
+  for (const pane of [dense, gaze]) {
+    await expect(pane.locator(".gv-token.is-current")).toHaveText("bicycle");
+    await expect(pane.locator(".gv-status")).toContainText("bicycle");
+  }
+  await expect(dense.locator(".gv-status")).toContainText(
+    "all 1,024 visual tokens",
+  );
+  await expect(gaze.locator(".gv-status")).toContainText(
+    "128 of 1,024 visual tokens",
+  );
 
-  await viewer
-    .getByRole("button", { name: "Dense attention", exact: true })
-    .click();
-  await expect(status).toContainText("all 1,024 visual tokens");
-  await expect(current).toHaveText("bicycle");
-
-  await viewer
-    .getByRole("button", { name: "Gaze Attention", exact: true })
-    .click();
-  await expect(status).toContainText("128 of 1,024 visual tokens");
-  await expect(current).toHaveText("bicycle");
+  await dense.locator(".gv-token", { hasText: "dog" }).click();
+  await expect(gaze.locator(".gv-token.is-current")).toHaveText("dog");
 });
 
 test("result pills open their accordion", async ({ page }) => {

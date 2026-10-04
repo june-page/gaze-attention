@@ -218,32 +218,29 @@
               <div
                 class="gaze-viewer"
                 data-gaze-viewer
-                data-view="gaze"
                 data-examples="dog-woman,dog-bike,dog-cat,skaters,cat-bowl,glue-scissors"
               >
-                <div class="gv-stage">
-                  <div class="gv-frame">
-                    <img
-                      src="assets/demo/dog-woman.jpg"
-                      alt="A woman in a white tank top and a man play with a dog that holds a blue frisbee on a lawn."
-                    />
+                <div class="gv-pane">
+                  <div class="gv-stage">
+                    <div class="gv-frame">
+                      <img
+                        src="assets/demo/dog-woman.jpg"
+                        alt="A woman in a white tank top and a man play with a dog that holds a blue frisbee on a lawn."
+                      />
+                    </div>
                   </div>
-                </div>
-                <div class="gv-side">
-                  <p class="gv-answer">
-                    A woman wearing a white tank top and sunglasses is playing
-                    with a brown and black dog that has a blue frisbee in its
-                    mouth.
-                  </p>
+                  <div class="gv-side">
+                    <p class="gv-answer">
+                      A woman wearing a white tank top and sunglasses is playing
+                      with a brown and black dog that has a blue frisbee in its
+                      mouth.
+                    </p>
+                  </div>
                 </div>
               </div>
               <p class="figure-caption">
-                Attention at layer 15 of Cambrian-4B (SigLIP2-So/16 at 512 px,
-                Qwen3-4B) while each word is generated. With Gaze Attention, a
-                head attends to only 2 of the 16 gaze regions (128 of 1,024
-                visual tokens); dense attention covers all of them. The routing
-                is learned without any gaze supervision. Click a word to jump to
-                it.
+                The routing is learned without any gaze supervision. Click a
+                word to jump to it.
               </p>
             </div>
           </div>

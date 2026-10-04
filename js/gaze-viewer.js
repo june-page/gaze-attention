@@ -44,7 +44,7 @@
       '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 2h4v12H3zM9 2h4v12H9z"/></svg>',
   };
 
-  var VIEWS = ["gaze", "dense"];
+  var VIEWS = ["dense", "gaze"]; // top to bottom
   var VIEW_LABELS = {
     gaze: "Gaze Attention",
     dense: "Dense attention",
@@ -358,142 +358,47 @@
 
   /* ---------- viewer ---------- */
 
-  function Viewer(root) {
-    var self = this;
-    this.root = root;
-    this.exampleIds = (root.dataset.examples || "")
-      .split(",")
-      .map(function (id) {
-        return id.trim();
-      })
-      .filter(function (id) {
-        return EXAMPLES[id];
-      });
-    if (!this.exampleIds.length) this.exampleIds = Object.keys(EXAMPLES);
-    this.exampleIndex = 0;
-    this.view =
-      VIEWS.indexOf(root.dataset.view) < 0 ? "gaze" : root.dataset.view;
+  /* The answer of one model and its attention map. */
+  function Pane(viewer, view) {
+    this.viewer = viewer;
+    this.view = view;
     this.step = 0;
-    this.playing = !reducedMotion;
-    this.visible = false;
-    this.timer = null;
     this.animation = null;
     this.weights = new Float32Array(REGION_COUNT);
-
-    this.build();
-    this.reserveAnswerHeight();
-    if (reducedMotion) this.step = Math.min(3, this.stepCount() - 1);
-    this.applyStep(false);
-
-    var answerWidth = this.answer.clientWidth;
-    function onResize() {
-      if (self.answer.clientWidth !== answerWidth) {
-        answerWidth = self.answer.clientWidth;
-        self.reserveAnswerHeight();
-        self.applyStep(false);
-      } else {
-        self.draw();
-      }
-    }
-    if (window.ResizeObserver) new ResizeObserver(onResize).observe(this.root);
-    else window.addEventListener("resize", onResize);
-    if (document.fonts && document.fonts.ready) {
-      document.fonts.ready.then(function () {
-        self.reserveAnswerHeight();
-        self.applyStep(false);
-      });
-    }
-    // Play only while a good part of the image is on screen.
-    if (window.IntersectionObserver) {
-      new IntersectionObserver(
-        function (entries) {
-          var latest = entries[entries.length - 1];
-          self.visible =
-            latest.isIntersecting && latest.intersectionRatio >= VISIBLE_SHARE;
-          self.schedule();
-        },
-        { threshold: VISIBLE_SHARE },
-      ).observe(this.slot);
-    } else {
-      this.visible = true;
-      this.schedule();
-    }
-    document.addEventListener("visibilitychange", function () {
-      self.schedule();
-    });
   }
 
-  Viewer.prototype.example = function () {
-    return EXAMPLES[this.exampleIds[this.exampleIndex]];
+  Pane.prototype.tokens = function () {
+    return tokensOf(this.viewer.example(), this.view);
   };
 
-  Viewer.prototype.tokens = function () {
-    return tokensOf(this.example(), this.view);
-  };
-
-  Viewer.prototype.stepCount = function () {
+  Pane.prototype.stepCount = function () {
     return this.tokens().length - 1;
   };
 
-  Viewer.prototype.build = function () {
-    var self = this;
-    var root = this.root;
-    root.textContent = "";
+  Pane.prototype.build = function (slotAspect) {
+    var root = element("div", "gv-pane is-" + this.view);
 
-    // The slot is as tall as the tallest image, so that switching examples does not move the page.
     var stage = element("div", "gv-stage");
     this.slot = element("div", "gv-frame-slot");
-    this.slot.style.aspectRatio = String(
-      Math.min.apply(
-        null,
-        this.exampleIds.map(function (id) {
-          return EXAMPLES[id].aspect;
-        }),
-      ),
-    );
+    this.slot.style.aspectRatio = String(slotAspect);
     this.frame = element("div", "gv-frame");
     this.canvas = document.createElement("canvas");
     this.canvas.setAttribute("role", "img");
     this.frame.appendChild(this.canvas);
     this.slot.appendChild(this.frame);
     stage.appendChild(this.slot);
-
-    var legend = element("div", "gv-legend");
-    legend.appendChild(element("span", null, "low"));
-    legend.appendChild(element("span", "gv-legend-bar is-heat"));
-    legend.appendChild(element("span", null, "high"));
-    legend.appendChild(
-      element("span", "gv-legend-title", "attention score (log-normalized)"),
-    );
-    stage.appendChild(legend);
     root.appendChild(stage);
 
     var sidePanel = element("div", "gv-side");
-
-    var toolbar = element("div", "gv-toolbar");
-    this.viewButtons = this.segmented(
-      toolbar,
-      "View",
-      VIEWS.map(function (view) {
-        return { value: view, label: VIEW_LABELS[view] };
-      }),
-      function (value) {
-        self.setView(value);
-      },
+    sidePanel.appendChild(
+      element("p", "gv-pane-title", VIEW_LABELS[this.view]),
     );
-    sidePanel.appendChild(toolbar);
 
-    var qa = element("div", "gv-qa");
-    var question = element("p", "gv-line gv-question");
-    question.appendChild(element("span", "gv-tag", "Q"));
-    question.appendChild(element("span", null, DEMO.question));
-    qa.appendChild(question);
     var answer = element("p", "gv-line gv-answer");
     answer.appendChild(element("span", "gv-tag is-answer", "A"));
     this.answer = element("span", "gv-tokens");
     answer.appendChild(this.answer);
-    qa.appendChild(answer);
-    sidePanel.appendChild(qa);
+    sidePanel.appendChild(answer);
 
     this.status = element("p", "gv-status");
     this.status.setAttribute("aria-live", "off");
@@ -502,131 +407,14 @@
     this.status.appendChild(this.statusWord);
     this.status.appendChild(this.statusText);
     sidePanel.appendChild(this.status);
-
-    var controls = element("div", "gv-controls");
-    var transport = element("div", "gv-transport");
-    this.prevButton = this.iconButton(
-      "gv-btn",
-      ICONS.prev,
-      "Previous word",
-      function () {
-        self.pause();
-        self.setStep(
-          self.step > 0 ? self.step - 1 : self.stepCount() - 1,
-          true,
-        );
-      },
-    );
-    this.playButton = this.iconButton(
-      "gv-btn gv-play",
-      ICONS.pause,
-      "Pause",
-      function () {
-        if (self.playing) self.pause();
-        else self.play();
-      },
-    );
-    this.nextButton = this.iconButton(
-      "gv-btn",
-      ICONS.next,
-      "Next word",
-      function () {
-        self.pause();
-        self.setStep(
-          self.step < self.stepCount() - 1 ? self.step + 1 : 0,
-          true,
-        );
-      },
-    );
-    transport.appendChild(this.prevButton);
-    transport.appendChild(this.playButton);
-    transport.appendChild(this.nextButton);
-    this.progress = element("span", "gv-progress");
-    transport.appendChild(this.progress);
-    controls.appendChild(transport);
-
-    var thumbs = element("div", "gv-thumbs");
-    thumbs.setAttribute("role", "group");
-    thumbs.setAttribute("aria-label", "Example image");
-    this.thumbButtons = this.exampleIds.map(function (id, index) {
-      var button = element("button", "gv-thumb");
-      button.type = "button";
-      button.setAttribute(
-        "aria-label",
-        "Example " + (index + 1) + ": " + EXAMPLES[id].alt,
-      );
-      var thumb = document.createElement("img");
-      thumb.src = EXAMPLES[id].image;
-      thumb.alt = "";
-      button.appendChild(thumb);
-      button.addEventListener("click", function () {
-        self.setExample(index);
-      });
-      thumbs.appendChild(button);
-      return button;
-    });
-    controls.appendChild(thumbs);
-    sidePanel.appendChild(controls);
     root.appendChild(sidePanel);
 
-    root.addEventListener("keydown", function (event) {
-      if (event.key === "ArrowRight") self.nextButton.click();
-      else if (event.key === "ArrowLeft") self.prevButton.click();
-      else return;
-      event.preventDefault();
-    });
-
-    this.syncControls();
+    return root;
   };
 
-  Viewer.prototype.segmented = function (parent, label, options, onSelect) {
-    var group = element("div", "gv-group");
-    group.appendChild(element("span", "gv-group-label", label));
-    var wrap = element("div", "segmented");
-    wrap.setAttribute("role", "group");
-    wrap.setAttribute("aria-label", label);
-    var buttons = options.map(function (option) {
-      var button = element("button", null, option.label);
-      button.type = "button";
-      button.dataset.value = option.value;
-      button.addEventListener("click", function () {
-        onSelect(option.value);
-      });
-      wrap.appendChild(button);
-      return button;
-    });
-    group.appendChild(wrap);
-    parent.appendChild(group);
-    return buttons;
-  };
-
-  Viewer.prototype.iconButton = function (className, icon, label, onClick) {
-    var button = element("button", className);
-    button.type = "button";
-    button.innerHTML = icon;
-    button.setAttribute("aria-label", label);
-    button.addEventListener("click", onClick);
-    return button;
-  };
-
-  Viewer.prototype.syncControls = function () {
+  Pane.prototype.renderTokens = function (example) {
     var self = this;
-    this.viewButtons.forEach(function (button) {
-      button.setAttribute(
-        "aria-pressed",
-        String(button.dataset.value === self.view),
-      );
-    });
-    this.thumbButtons.forEach(function (button, index) {
-      button.setAttribute("aria-pressed", String(index === self.exampleIndex));
-    });
-    this.playButton.innerHTML = this.playing ? ICONS.pause : ICONS.play;
-    this.playButton.setAttribute("aria-label", this.playing ? "Pause" : "Play");
-  };
-
-  Viewer.prototype.renderTokens = function () {
-    var self = this;
-    var tokens = this.tokens();
+    var tokens = tokensOf(example, this.view);
     var word = null; // tokens of one word stay on the same line
     this.answer.textContent = "";
     this.tokenNodes = tokens.map(function (token, index) {
@@ -643,8 +431,8 @@
         node = element("button", "gv-token", text);
         node.type = "button";
         node.addEventListener("click", function () {
-          self.pause();
-          self.setStep(index - 1, true);
+          self.viewer.pause();
+          self.viewer.jumpTo(self, index - 1);
         });
       }
       word.appendChild(node);
@@ -653,28 +441,39 @@
   };
 
   /* Reserve room for the longest answer so that switching examples does not move the page. */
-  Viewer.prototype.reserveAnswerHeight = function () {
+  Pane.prototype.reserveAnswerHeight = function () {
     var self = this;
     var line = this.answer.parentElement;
-    var saved = { index: this.exampleIndex, view: this.view };
     var tallest = 0;
     line.style.minHeight = "";
-    this.exampleIds.forEach(function (id, index) {
-      VIEWS.forEach(function (view) {
-        self.exampleIndex = index;
-        self.view = view;
-        self.renderTokens();
-        tallest = Math.max(tallest, line.offsetHeight);
-      });
+    this.viewer.exampleIds.forEach(function (id) {
+      self.renderTokens(EXAMPLES[id]);
+      tallest = Math.max(tallest, line.offsetHeight);
     });
-    this.exampleIndex = saved.index;
-    this.view = saved.view;
-    this.renderTokens();
+    this.renderTokens(this.viewer.example());
     if (tallest) line.style.minHeight = tallest + "px";
   };
 
-  Viewer.prototype.applyStep = function (animate) {
-    var example = this.example();
+  /* The step that generates `word`: the one closest to `near` if there are several,
+     `near` itself if this answer does not have the word. */
+  Pane.prototype.stepOfWord = function (word, near) {
+    var tokens = this.tokens();
+    var best = near;
+    var distance = Infinity;
+    for (var i = 1; i < tokens.length; i += 1) {
+      if (
+        wordAt(tokens, i).toLowerCase() === word &&
+        Math.abs(i - 1 - near) < distance
+      ) {
+        best = i - 1;
+        distance = Math.abs(i - 1 - near);
+      }
+    }
+    return best;
+  };
+
+  Pane.prototype.applyStep = function (animate) {
+    var example = this.viewer.example();
     var tokens = this.tokens();
     var current = this.step + 1;
     var frame = frameOf(example, this.view, this.step);
@@ -709,7 +508,6 @@
       else statusText.appendChild(document.createTextNode(part));
     });
 
-    this.progress.textContent = this.step + 1 + " / " + this.stepCount();
     this.canvas.setAttribute(
       "aria-label",
       example.alt +
@@ -729,12 +527,12 @@
     }
   };
 
-  Viewer.prototype.cancelAnimation = function () {
+  Pane.prototype.cancelAnimation = function () {
     if (this.animation) cancelAnimationFrame(this.animation);
     this.animation = null;
   };
 
-  Viewer.prototype.animateTo = function (target) {
+  Pane.prototype.animateTo = function (target) {
     var self = this;
     var from = this.weights;
     var start = null;
@@ -753,17 +551,17 @@
     this.animation = requestAnimationFrame(tick);
   };
 
-  Viewer.prototype.draw = function () {
+  Pane.prototype.draw = function () {
     var self = this;
-    var example = this.example();
+    var example = this.viewer.example();
     if (!this.currentFrame || !fitCanvas(this.canvas, example.aspect)) return;
     this.image = loadImage(example.image, function () {
-      if (self.example() === example) self.paintNow();
+      if (self.viewer.example() === example) self.paintNow();
     });
     this.paintNow();
   };
 
-  Viewer.prototype.paintNow = function () {
+  Pane.prototype.paintNow = function () {
     if (!this.canvas.width) return;
     paint(
       this.canvas.getContext("2d"),
@@ -776,45 +574,292 @@
     );
   };
 
-  Viewer.prototype.setStep = function (step, animate) {
-    this.step = Math.max(0, Math.min(this.stepCount() - 1, step));
-    this.applyStep(animate);
+  /* Both models answer the same question about the same image, one pane above the other. */
+  function Viewer(root) {
+    var self = this;
+    this.root = root;
+    this.exampleIds = (root.dataset.examples || "")
+      .split(",")
+      .map(function (id) {
+        return id.trim();
+      })
+      .filter(function (id) {
+        return EXAMPLES[id];
+      });
+    if (!this.exampleIds.length) this.exampleIds = Object.keys(EXAMPLES);
+    this.exampleIndex = 0;
+    this.playing = !reducedMotion;
+    this.visible = false;
+    this.timer = null;
+    this.panes = VIEWS.map(function (view) {
+      return new Pane(self, view);
+    });
+
+    this.build();
+    this.reserveAnswerHeight();
+    if (reducedMotion) {
+      this.panes.forEach(function (pane) {
+        pane.step = Math.min(3, pane.stepCount() - 1);
+      });
+    }
+    this.applySteps();
+
+    var answer = this.panes[0].answer;
+    var answerWidth = answer.clientWidth;
+    function onResize() {
+      if (answer.clientWidth !== answerWidth) {
+        answerWidth = answer.clientWidth;
+        self.reserveAnswerHeight();
+        self.applySteps();
+      } else {
+        self.panes.forEach(function (pane) {
+          pane.draw();
+        });
+      }
+    }
+    if (window.ResizeObserver) new ResizeObserver(onResize).observe(this.root);
+    else window.addEventListener("resize", onResize);
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(function () {
+        self.reserveAnswerHeight();
+        self.applySteps();
+      });
+    }
+    // Play only while a good part of the maps is on screen.
+    if (window.IntersectionObserver) {
+      new IntersectionObserver(
+        function (entries) {
+          var latest = entries[entries.length - 1];
+          self.visible =
+            latest.isIntersecting && latest.intersectionRatio >= VISIBLE_SHARE;
+          self.schedule();
+        },
+        { threshold: VISIBLE_SHARE },
+      ).observe(this.paneList);
+    } else {
+      this.visible = true;
+      this.schedule();
+    }
+    document.addEventListener("visibilitychange", function () {
+      self.schedule();
+    });
+  }
+
+  Viewer.prototype.example = function () {
+    return EXAMPLES[this.exampleIds[this.exampleIndex]];
+  };
+
+  /* Steps left until every answer is complete. */
+  Viewer.prototype.remaining = function () {
+    return Math.max.apply(
+      null,
+      this.panes.map(function (pane) {
+        return pane.stepCount() - 1 - pane.step;
+      }),
+    );
+  };
+
+  Viewer.prototype.build = function () {
+    var self = this;
+    var root = this.root;
+    root.textContent = "";
+
+    var head = element("div", "gv-head");
+
+    var thumbs = element("div", "gv-thumbs");
+    thumbs.setAttribute("role", "group");
+    thumbs.setAttribute("aria-label", "Example image");
+    this.thumbButtons = this.exampleIds.map(function (id, index) {
+      var button = element("button", "gv-thumb");
+      button.type = "button";
+      button.setAttribute(
+        "aria-label",
+        "Example " + (index + 1) + ": " + EXAMPLES[id].alt,
+      );
+      var thumb = document.createElement("img");
+      thumb.src = EXAMPLES[id].image;
+      thumb.alt = "";
+      button.appendChild(thumb);
+      button.addEventListener("click", function () {
+        self.setExample(index);
+      });
+      thumbs.appendChild(button);
+      return button;
+    });
+    head.appendChild(thumbs);
+
+    var controls = element("div", "gv-controls");
+    var question = element("p", "gv-line gv-question");
+    question.appendChild(element("span", "gv-tag", "Q"));
+    question.appendChild(element("span", null, DEMO.question));
+    controls.appendChild(question);
+
+    var transport = element("div", "gv-transport");
+    this.prevButton = this.iconButton(
+      "gv-btn",
+      ICONS.prev,
+      "Previous word",
+      function () {
+        var atStart = self.panes.every(function (pane) {
+          return pane.step === 0;
+        });
+        self.pause();
+        if (atStart) self.seek(Infinity);
+        else self.shift(-1);
+      },
+    );
+    this.playButton = this.iconButton(
+      "gv-btn gv-play",
+      ICONS.pause,
+      "Pause",
+      function () {
+        if (self.playing) self.pause();
+        else self.play();
+      },
+    );
+    this.nextButton = this.iconButton(
+      "gv-btn",
+      ICONS.next,
+      "Next word",
+      function () {
+        self.pause();
+        if (self.remaining() > 0) self.shift(1);
+        else self.seek(0);
+      },
+    );
+    transport.appendChild(this.prevButton);
+    transport.appendChild(this.playButton);
+    transport.appendChild(this.nextButton);
+    this.progress = element("span", "gv-progress");
+    transport.appendChild(this.progress);
+    controls.appendChild(transport);
+    head.appendChild(controls);
+    root.appendChild(head);
+
+    // The slots are as tall as the tallest image, so that switching examples does not move the page.
+    var slotAspect = Math.min.apply(
+      null,
+      this.exampleIds.map(function (id) {
+        return EXAMPLES[id].aspect;
+      }),
+    );
+    this.paneList = element("div", "gv-panes");
+    this.panes.forEach(function (pane) {
+      self.paneList.appendChild(pane.build(slotAspect));
+    });
+    root.appendChild(this.paneList);
+
+    var legend = element("div", "gv-legend");
+    legend.appendChild(element("span", null, "low"));
+    legend.appendChild(element("span", "gv-legend-bar is-heat"));
+    legend.appendChild(element("span", null, "high"));
+    legend.appendChild(
+      element("span", "gv-legend-title", "attention score (log-normalized)"),
+    );
+    root.appendChild(legend);
+
+    root.addEventListener("keydown", function (event) {
+      if (event.key === "ArrowRight") self.nextButton.click();
+      else if (event.key === "ArrowLeft") self.prevButton.click();
+      else return;
+      event.preventDefault();
+    });
+
+    this.syncControls();
+  };
+
+  Viewer.prototype.iconButton = function (className, icon, label, onClick) {
+    var button = element("button", className);
+    button.type = "button";
+    button.innerHTML = icon;
+    button.setAttribute("aria-label", label);
+    button.addEventListener("click", onClick);
+    return button;
+  };
+
+  Viewer.prototype.syncControls = function () {
+    var self = this;
+    this.thumbButtons.forEach(function (button, index) {
+      button.setAttribute("aria-pressed", String(index === self.exampleIndex));
+    });
+    this.playButton.innerHTML = this.playing ? ICONS.pause : ICONS.play;
+    this.playButton.setAttribute("aria-label", this.playing ? "Pause" : "Play");
+  };
+
+  Viewer.prototype.reserveAnswerHeight = function () {
+    this.panes.forEach(function (pane) {
+      pane.reserveAnswerHeight();
+    });
+  };
+
+  /* The answers differ in length, so the progress counts down to the end of the longest one. */
+  Viewer.prototype.syncProgress = function () {
+    var total = Math.max.apply(
+      null,
+      this.panes.map(function (pane) {
+        return pane.stepCount();
+      }),
+    );
+    this.progress.textContent = total - this.remaining() + " / " + total;
+  };
+
+  Viewer.prototype.applySteps = function () {
+    this.panes.forEach(function (pane) {
+      pane.applyStep(false);
+    });
+    this.syncProgress();
+  };
+
+  /* Each pane moves to the step that `stepOf` returns for it, kept within its answer. */
+  Viewer.prototype.setSteps = function (stepOf) {
+    this.panes.forEach(function (pane) {
+      var step = Math.max(0, Math.min(pane.stepCount() - 1, stepOf(pane)));
+      if (step === pane.step) return;
+      pane.step = step;
+      pane.applyStep(true);
+    });
+    this.syncProgress();
     this.schedule();
+  };
+
+  Viewer.prototype.seek = function (step) {
+    this.setSteps(function () {
+      return step;
+    });
+  };
+
+  /* An answer that is already complete waits for the other one. */
+  Viewer.prototype.shift = function (delta) {
+    this.setSteps(function (pane) {
+      return pane.step + delta;
+    });
+  };
+
+  /* Jump to a word of one answer; the other answer follows to the same word. */
+  Viewer.prototype.jumpTo = function (source, step) {
+    var word = wordAt(source.tokens(), step + 1).toLowerCase();
+    this.setSteps(function (pane) {
+      return pane === source ? step : pane.stepOfWord(word, step);
+    });
   };
 
   Viewer.prototype.setExample = function (index) {
+    var example;
     this.exampleIndex = index;
-    this.step = 0;
-    this.renderTokens();
+    example = this.example();
+    this.panes.forEach(function (pane) {
+      pane.step = 0;
+      pane.renderTokens(example);
+    });
     this.syncControls();
-    this.applyStep(false);
-    this.schedule();
-  };
-
-  Viewer.prototype.setView = function (view) {
-    if (view === this.view) return;
-    var word = wordAt(this.tokens(), this.step + 1).toLowerCase();
-    this.view = view;
-    this.renderTokens();
-    // Stay on the same word when the other model generated it too.
-    var tokens = this.tokens();
-    var step = 0;
-    for (var i = 1; i < tokens.length; i += 1) {
-      if (wordAt(tokens, i).toLowerCase() === word) {
-        step = i - 1;
-        break;
-      }
-    }
-    this.step = step;
-    this.syncControls();
-    this.applyStep(false);
+    this.applySteps();
     this.schedule();
   };
 
   Viewer.prototype.play = function () {
     this.playing = true;
     this.syncControls();
-    if (this.step >= this.stepCount() - 1) this.setStep(0, false);
+    if (this.remaining() === 0) this.seek(0);
     this.schedule();
   };
 
@@ -824,18 +869,19 @@
     this.schedule();
   };
 
-  /* While playing, the answer is generated word by word; then the next example starts. */
+  /* While playing, the answers are generated word by word; then the next example starts. */
   Viewer.prototype.schedule = function () {
     var self = this;
     clearTimeout(this.timer);
     if (!this.playing || !this.visible || document.hidden) return;
-    var last = this.stepCount() - 1;
+    var done = this.remaining() === 0;
     this.timer = setTimeout(
       function () {
-        if (self.step < last) self.setStep(self.step + 1, true);
-        else self.setExample((self.exampleIndex + 1) % self.exampleIds.length);
+        if (done)
+          self.setExample((self.exampleIndex + 1) % self.exampleIds.length);
+        else self.shift(1);
       },
-      this.step >= last ? END_PAUSE_MS : STEP_MS,
+      done ? END_PAUSE_MS : STEP_MS,
     );
   };
 
