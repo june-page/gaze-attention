@@ -88,8 +88,8 @@ test("gaze viewer shows dense and gaze attention for the selected word", async (
   await expect(viewer.locator(".gv-thumb")).toHaveCount(6);
   await expect(panes).toHaveCount(2);
   await expect(panes.locator(".gv-pane-title")).toHaveText([
-    "Dense attention",
-    "Gaze Attention",
+    "MLLM with Dense Attention",
+    "MLLM with Gaze Attention",
   ]);
   const thumbsBox = await viewer.locator(".gv-thumbs").boundingBox();
   const denseBox = await dense.boundingBox();
@@ -98,10 +98,10 @@ test("gaze viewer shows dense and gaze attention for the selected word", async (
   expect(denseBox.y + denseBox.height).toBeLessThanOrEqual(gazeBox.y);
 
   await viewer.getByRole("button", { name: /^Example 2:/ }).click();
-  await gaze.locator(".gv-token", { hasText: "bicycle" }).click();
+  await gaze.locator(".gv-token", { hasText: "bowl" }).click();
   for (const pane of [dense, gaze]) {
-    await expect(pane.locator(".gv-token.is-current")).toHaveText("bicycle");
-    await expect(pane.locator(".gv-status")).toContainText("bicycle");
+    await expect(pane.locator(".gv-token.is-current")).toHaveText("bowl");
+    await expect(pane.locator(".gv-status")).toContainText("bowl");
   }
   await expect(dense.locator(".gv-status")).toContainText(
     "all 1,024 visual tokens",
@@ -110,8 +110,9 @@ test("gaze viewer shows dense and gaze attention for the selected word", async (
     "128 of 1,024 visual tokens",
   );
 
-  await dense.locator(".gv-token", { hasText: "dog" }).click();
-  await expect(gaze.locator(".gv-token.is-current")).toHaveText("dog");
+  await viewer.getByRole("button", { name: /^Example 1:/ }).click();
+  await dense.locator(".gv-token", { hasText: "bicycle" }).click();
+  await expect(gaze.locator(".gv-token.is-current")).toHaveText("bicycle");
 });
 
 test("result pills open their accordion", async ({ page }) => {

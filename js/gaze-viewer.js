@@ -46,8 +46,8 @@
 
   var VIEWS = ["dense", "gaze"]; // top to bottom
   var VIEW_LABELS = {
-    gaze: "Gaze Attention",
-    dense: "Dense attention",
+    gaze: "MLLM with Gaze Attention",
+    dense: "MLLM with Dense Attention",
   };
 
   /* ---------- data ---------- */
